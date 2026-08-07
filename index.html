@@ -2,15 +2,32 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>📅 Расписание И-24-1</title>
     <meta name="description" content="Актуальное расписание занятий для группы И-24-1">
+    
+    <!-- ===== ИКОНКИ ДЛЯ РАБОЧЕГО СТОЛА ===== -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    
+    <!-- ===== НАСТРОЙКИ ДЛЯ IPHONE (PWA) ===== -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Расписание И-24-1">
+    
+    <!-- ===== ЦВЕТ ФОНА ДЛЯ ИКОНКИ ===== -->
+    <meta name="theme-color" content="#4a6cf7">
+    <meta name="msapplication-TileColor" content="#4a6cf7">
+    
+    <!-- ===== СТИЛИ ===== -->
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 </head>
 <body>
     <div class="container">
-        <!-- ===== ШАПКА ===== -->
+        <!-- ============================================
+             ШАПКА
+             ============================================ -->
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
@@ -23,7 +40,9 @@
             </div>
         </header>
 
-        <!-- ===== УПРАВЛЕНИЕ ===== -->
+        <!-- ============================================
+             УПРАВЛЕНИЕ
+             ============================================ -->
         <nav class="controls" role="navigation" aria-label="Управление расписанием">
             <button class="btn btn-primary" onclick="loadToday()" aria-label="Показать сегодня">
                 📅 Сегодня
@@ -40,13 +59,17 @@
             </div>
         </nav>
 
-        <!-- ===== ИНФОРМАЦИЯ ===== -->
+        <!-- ============================================
+             ИНФОРМАЦИОННАЯ ПОЛОСА
+             ============================================ -->
         <div class="info-bar" id="infoBar">
             <span id="currentView">📅 Сегодня</span>
             <span id="pairsCount">Всего пар: 0</span>
         </div>
 
-        <!-- ===== РАСПИСАНИЕ ===== -->
+        <!-- ============================================
+             РАСПИСАНИЕ
+             ============================================ -->
         <div id="scheduleContainer" role="main" aria-live="polite">
             <div class="loader">
                 <div class="loader-spinner"></div>
@@ -54,7 +77,9 @@
             </div>
         </div>
 
-        <!-- ===== ПОДВАЛ ===== -->
+        <!-- ============================================
+             ПОДВАЛ
+             ============================================ -->
         <footer class="footer">
             <span>© 2026 · Расписание И-24-1</span>
             <span class="footer-separator">|</span>
@@ -63,6 +88,7 @@
         </footer>
     </div>
 
+    <!-- ===== СКРИПТЫ ===== -->
     <script src="script.js"></script>
 </body>
 </html>
