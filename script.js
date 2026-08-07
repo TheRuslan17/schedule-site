@@ -39,6 +39,22 @@ const getTomorrow = () => {
     return date;
 };
 
+// Получение дат текущей недели (с понедельника по воскресенье)
+const getCurrentWeekDates = () => {
+    const today = new Date();
+    const day = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        dates.push(formatDate(date));
+    }
+    return dates;
+};
+
 // ============================================
 // ЗАГРУЗКА ДАННЫХ
 // ============================================
@@ -49,7 +65,6 @@ const loadSchedule = async () => {
         if (!response.ok) throw new Error('Файл не найден');
         scheduleData = await response.json();
 
-        // Обновляем время
         const now = new Date();
         document.getElementById('updateTime').textContent =
             `Обновлено: ${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
@@ -82,6 +97,7 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
         return;
     }
 
+    // Сортируем по номеру пары
     const sorted = [...schedule].sort((a, b) => a.pair - b.pair);
     const hasChanges = sorted.some(p => p.changed === true);
 
@@ -93,27 +109,68 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
             </div>
     `;
 
+    // Группируем пары по номеру
+    const pairsByNumber = {};
     sorted.forEach(pair => {
-        const time = PAIR_TIMES[pair.pair] || `${pair.pair} пара`;
-        const subgroup = pair.subgroup ? `<span class="subgroup">подгр. ${pair.subgroup}</span>` : '';
-        const room = pair.room ? `<span class="room">📍 ${pair.room}</span>` : '';
-        const building = pair.building ? `<span class="building">🏢 ${pair.building}</span>` : '';
-        const teacher = pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : '';
-        const changed = pair.changed ? `<span class="changed">🔄 ИЗМЕНЕНИЕ</span>` : '';
+        const key = pair.pair;
+        if (!pairsByNumber[key]) {
+            pairsByNumber[key] = [];
+        }
+        pairsByNumber[key].push(pair);
+    });
+
+    // Отображаем каждую пару
+    Object.keys(pairsByNumber).sort((a, b) => a - b).forEach(pairNum => {
+        const pairs = pairsByNumber[pairNum];
+        const time = PAIR_TIMES[pairNum] || `${pairNum} пара`;
+        const hasMultipleSubgroups = pairs.length > 1;
+
+        // Проверяем, есть ли изменения в этой группе пар
+        const hasPairChanges = pairs.some(p => p.changed === true);
 
         html += `
-            <div class="pair ${pair.changed ? 'pair-changed' : ''}">
-                <span class="pair-time">🕒 ${time}</span>
-                <span class="pair-subject">${pair.subject}</span>
-                <span class="pair-meta">
-                    ${subgroup}
-                    ${room}
-                    ${building}
-                    ${teacher}
-                    ${changed}
-                </span>
-            </div>
+            <div class="pair-group ${hasPairChanges ? 'pair-group-changed' : ''}">
+                <div class="pair-group-header">
+                    <span class="pair-number">📗 ${pairNum} пара</span>
+                    <span class="pair-time">🕒 ${time}</span>
+                    ${hasPairChanges ? '<span class="changed-badge">🔄 ИЗМЕНЕНИЕ</span>' : ''}
+                </div>
         `;
+
+        if (hasMultipleSubgroups) {
+            // Если несколько подгрупп — показываем каждую отдельно
+            pairs.forEach((pair, index) => {
+                const subgroupLabel = pair.subgroup ? `Подгруппа ${pair.subgroup}` : `Вариант ${index + 1}`;
+                html += `
+                    <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
+                        <span class="pair-subgroup">👥 ${subgroupLabel}</span>
+                        <span class="pair-subject">${pair.subject}</span>
+                        <span class="pair-meta">
+                            ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
+                            ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
+                            ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                            ${pair.changed ? '<span class="changed">🔄</span>' : ''}
+                        </span>
+                    </div>
+                `;
+            });
+        } else {
+            // Одна пара — показываем компактно
+            const pair = pairs[0];
+            html += `
+                <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
+                    <span class="pair-subject">${pair.subject}</span>
+                    <span class="pair-meta">
+                        ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
+                        ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
+                        ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                        ${pair.changed ? '<span class="changed">🔄</span>' : ''}
+                    </span>
+                </div>
+            `;
+        }
+
+        html += `</div>`;
     });
 
     html += '</div>';
@@ -152,20 +209,16 @@ const loadWeek = async () => {
     if (!loaded) return;
 
     const container = document.getElementById('scheduleContainer');
-    const today = new Date();
-    const monday = new Date(today);
-    const day = today.getDay();
-    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    const weekDates = getCurrentWeekDates();
+    const todayStr = formatDate(new Date());
 
     let html = '';
     let foundAny = false;
     let totalPairs = 0;
 
-    for (let i = 0; i < 5; i++) {
-        const date = new Date(monday);
-        date.setDate(monday.getDate() + i);
-        const dateStr = formatDate(date);
+    for (const dateStr of weekDates) {
         const schedule = scheduleData[dateStr] || [];
+        const isToday = dateStr === todayStr;
 
         if (schedule.length > 0) {
             foundAny = true;
@@ -174,34 +227,71 @@ const loadWeek = async () => {
             const hasChanges = sorted.some(p => p.changed === true);
 
             html += `
-                <div class="day-schedule ${hasChanges ? 'has-changes' : ''}">
+                <div class="day-schedule ${hasChanges ? 'has-changes' : ''} ${isToday ? 'today-highlight' : ''}">
                     <div class="day-title">
-                        📅 ${dateStr}, ${getWeekday(dateStr)}
+                        ${isToday ? '⭐ ' : '📅 '} ${dateStr}, ${getWeekday(dateStr)}
+                        ${isToday ? '<span class="today-badge">СЕГОДНЯ</span>' : ''}
                         ${hasChanges ? '<span class="change-badge">🔄 Есть изменения</span>' : ''}
                     </div>
             `;
 
+            // Группируем по номеру пары
+            const pairsByNumber = {};
             sorted.forEach(pair => {
-                const time = PAIR_TIMES[pair.pair] || `${pair.pair} пара`;
-                const subgroup = pair.subgroup ? `<span class="subgroup">подгр. ${pair.subgroup}</span>` : '';
-                const room = pair.room ? `<span class="room">📍 ${pair.room}</span>` : '';
-                const building = pair.building ? `<span class="building">🏢 ${pair.building}</span>` : '';
-                const teacher = pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : '';
-                const changed = pair.changed ? `<span class="changed">🔄 ИЗМЕНЕНИЕ</span>` : '';
+                const key = pair.pair;
+                if (!pairsByNumber[key]) {
+                    pairsByNumber[key] = [];
+                }
+                pairsByNumber[key].push(pair);
+            });
+
+            Object.keys(pairsByNumber).sort((a, b) => a - b).forEach(pairNum => {
+                const pairs = pairsByNumber[pairNum];
+                const time = PAIR_TIMES[pairNum] || `${pairNum} пара`;
+                const hasMultipleSubgroups = pairs.length > 1;
+                const hasPairChanges = pairs.some(p => p.changed === true);
 
                 html += `
-                    <div class="pair ${pair.changed ? 'pair-changed' : ''}">
-                        <span class="pair-time">🕒 ${time}</span>
-                        <span class="pair-subject">${pair.subject}</span>
-                        <span class="pair-meta">
-                            ${subgroup}
-                            ${room}
-                            ${building}
-                            ${teacher}
-                            ${changed}
-                        </span>
-                    </div>
+                    <div class="pair-group ${hasPairChanges ? 'pair-group-changed' : ''}">
+                        <div class="pair-group-header">
+                            <span class="pair-number">📗 ${pairNum} пара</span>
+                            <span class="pair-time">🕒 ${time}</span>
+                            ${hasPairChanges ? '<span class="changed-badge">🔄 ИЗМЕНЕНИЕ</span>' : ''}
+                        </div>
                 `;
+
+                if (hasMultipleSubgroups) {
+                    pairs.forEach((pair, index) => {
+                        const subgroupLabel = pair.subgroup ? `Подгруппа ${pair.subgroup}` : `Вариант ${index + 1}`;
+                        html += `
+                            <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
+                                <span class="pair-subgroup">👥 ${subgroupLabel}</span>
+                                <span class="pair-subject">${pair.subject}</span>
+                                <span class="pair-meta">
+                                    ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
+                                    ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
+                                    ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                                    ${pair.changed ? '<span class="changed">🔄</span>' : ''}
+                                </span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    const pair = pairs[0];
+                    html += `
+                        <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
+                            <span class="pair-subject">${pair.subject}</span>
+                            <span class="pair-meta">
+                                ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
+                                ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
+                                ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                                ${pair.changed ? '<span class="changed">🔄</span>' : ''}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
             });
 
             html += '</div>';

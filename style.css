@@ -23,6 +23,8 @@
     --warning: #f59f00;
     --warning-bg: #fff3cd;
     --warning-border: #fcc419;
+    --today-bg: #e8f5e9;
+    --today-border: #43a047;
 }
 
 html {
@@ -205,6 +207,12 @@ body {
     background: var(--warning-bg);
 }
 
+.day-schedule.today-highlight {
+    border-left-color: var(--today-border);
+    background: var(--today-bg);
+    box-shadow: 0 0 0 2px var(--today-border);
+}
+
 .day-title {
     font-weight: 700;
     font-size: 17px;
@@ -216,6 +224,15 @@ body {
     flex-wrap: wrap;
 }
 
+.today-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--today-border);
+    color: white;
+    padding: 2px 12px;
+    border-radius: 30px;
+}
+
 .change-badge {
     font-size: 12px;
     font-weight: 600;
@@ -225,40 +242,92 @@ body {
     border-radius: 30px;
 }
 
-.pair {
+/* ============================================
+   ГРУППА ПАР (по номеру)
+   ============================================ */
+.pair-group {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecf0;
+    transition: 0.2s;
+}
+
+.pair-group.pair-group-changed {
+    border-color: var(--warning);
+    background: #fffdf5;
+}
+
+.pair-group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    border-bottom: 1px dashed #e9ecf0;
+}
+
+.pair-group-header .pair-number {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 15px;
+}
+
+.pair-group-header .pair-time {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.pair-group-header .changed-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--warning);
+    color: #1a1a2e;
+    padding: 1px 10px;
+    border-radius: 30px;
+}
+
+/* ============================================
+   ОТДЕЛЬНАЯ ПАРА
+   ============================================ */
+.pair-item {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 16px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f2f5;
 }
 
-.pair:last-child {
+.pair-item:last-child {
     border-bottom: none;
     padding-bottom: 0;
 }
 
-.pair.pair-changed {
-    background: rgba(245, 159, 0, 0.08);
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin: 4px 0;
-    border-left: 3px solid var(--warning);
+.pair-item.pair-changed {
+    background: rgba(245, 159, 0, 0.06);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 2px 0;
 }
 
-.pair-time {
+.pair-subgroup {
     font-weight: 600;
-    color: var(--primary);
-    min-width: 100px;
-    font-size: 14px;
+    color: #0550ae;
+    font-size: 13px;
+    background: #ddf4ff;
+    padding: 1px 10px;
+    border-radius: 30px;
 }
 
 .pair-subject {
-    flex: 1;
     font-weight: 500;
     color: var(--text);
-    min-width: 120px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 100px;
 }
 
 .pair-meta {
@@ -270,12 +339,8 @@ body {
     color: var(--text-secondary);
 }
 
-.pair-meta .subgroup {
-    background: #ddf4ff;
-    color: #0550ae;
-    padding: 1px 10px;
-    border-radius: 30px;
-    font-size: 12px;
+.pair-meta .teacher {
+    color: var(--text-secondary);
 }
 
 .pair-meta .room {
@@ -294,14 +359,10 @@ body {
     font-size: 12px;
 }
 
-.pair-meta .teacher {
-    color: var(--text-secondary);
-}
-
 .pair-meta .changed {
     background: var(--warning);
     color: #1a1a2e;
-    padding: 1px 12px;
+    padding: 1px 8px;
     border-radius: 30px;
     font-size: 11px;
     font-weight: 700;
@@ -425,21 +486,23 @@ body {
     .controls input[type="date"] {
         width: 100%;
     }
-    .pair {
-        gap: 4px 12px;
-        padding: 8px 0;
+    .pair-group {
+        padding: 10px 12px;
     }
-    .pair-time {
-        min-width: 80px;
-        font-size: 13px;
+    .pair-item {
+        gap: 4px 10px;
+        padding: 5px 0;
+        flex-direction: column;
+        align-items: flex-start;
     }
     .pair-subject {
-        font-size: 14px;
-        min-width: 100px;
+        min-width: auto;
+        width: 100%;
     }
     .pair-meta {
         font-size: 12px;
         gap: 4px 8px;
+        width: 100%;
     }
     .day-schedule {
         padding: 14px 16px;
@@ -450,6 +513,9 @@ body {
     .info-bar {
         font-size: 13px;
         padding: 6px 0 12px 0;
+    }
+    .pair-group-header .pair-number {
+        font-size: 14px;
     }
 }
 
@@ -491,25 +557,22 @@ body {
     .day-title {
         font-size: 14px;
     }
-    .pair {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
-        padding: 8px 0;
+    .pair-group {
+        padding: 8px 10px;
     }
-    .pair-time {
-        min-width: auto;
-        font-size: 13px;
+    .pair-item {
+        gap: 2px 8px;
+        padding: 4px 0;
     }
     .pair-subject {
-        font-size: 14px;
-        min-width: auto;
-        width: 100%;
+        font-size: 13px;
+    }
+    .pair-subgroup {
+        font-size: 12px;
     }
     .pair-meta {
-        font-size: 12px;
-        gap: 2px 8px;
-        width: 100%;
+        font-size: 11px;
+        gap: 2px 6px;
     }
     .info-bar {
         flex-direction: column;
@@ -527,6 +590,17 @@ body {
     }
     .footer-separator {
         display: none;
+    }
+    .pair-group-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .pair-group-header .pair-number {
+        font-size: 13px;
+    }
+    .pair-group-header .pair-time {
+        font-size: 12px;
     }
 }
 
@@ -546,7 +620,7 @@ body {
         padding: 10px 12px;
     }
     .pair-subject {
-        font-size: 13px;
+        font-size: 12px;
     }
 }
 
@@ -594,6 +668,8 @@ input:focus-visible {
         --primary-light: #1c2333;
         --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         --warning-bg: #1c1a0d;
+        --today-bg: #0d1f0d;
+        --today-border: #2e7d32;
     }
 
     .header {
@@ -604,12 +680,26 @@ input:focus-visible {
         border-bottom-color: #21262d;
     }
 
-    .pair {
-        border-bottom-color: rgba(255, 255, 255, 0.05);
+    .pair-group {
+        background: #0d1117;
+        border-color: #21262d;
     }
 
-    .pair.pair-changed {
-        background: rgba(245, 159, 0, 0.1);
+    .pair-group.pair-group-changed {
+        background: #1c1a0d;
+        border-color: var(--warning);
+    }
+
+    .pair-group-header {
+        border-bottom-color: #21262d;
+    }
+
+    .pair-item {
+        border-bottom-color: #21262d;
+    }
+
+    .pair-item.pair-changed {
+        background: rgba(245, 159, 0, 0.08);
     }
 
     .controls .btn-outline {
@@ -634,17 +724,26 @@ input:focus-visible {
         color: #8b949e;
     }
 
-    .pair-meta .subgroup {
-        background: #1c2333;
-        color: #58a6ff;
-    }
-
     .pair-meta .room {
         background: #1c2333;
         color: #58a6ff;
     }
 
     .pair-meta .changed {
+        background: var(--warning);
+        color: #1a1a2e;
+    }
+
+    .pair-subgroup {
+        background: #1c2333;
+        color: #58a6ff;
+    }
+
+    .pair-group-header .pair-number {
+        color: #58a6ff;
+    }
+
+    .pair-group-header .changed-badge {
         background: var(--warning);
         color: #1a1a2e;
     }
@@ -663,9 +762,20 @@ input:focus-visible {
         border-left-color: var(--warning);
     }
 
+    .day-schedule.today-highlight {
+        background: #0d1f0d;
+        border-left-color: var(--today-border);
+        box-shadow: 0 0 0 2px var(--today-border);
+    }
+
     .change-badge {
         background: var(--warning);
         color: #1a1a2e;
+    }
+
+    .today-badge {
+        background: var(--today-border);
+        color: white;
     }
 
     .day-title .change-badge {
