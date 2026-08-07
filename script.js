@@ -39,15 +39,16 @@ const getTomorrow = () => {
     return date;
 };
 
-// Получение дат текущей недели (с понедельника по воскресенье)
+// Получение дат текущей недели (только ПН-ПТ)
 const getCurrentWeekDates = () => {
     const today = new Date();
     const day = today.getDay();
+    // Если сегодня воскресенье (0) — отступаем на 6 дней до понедельника
     const monday = new Date(today);
     monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
     
     const dates = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 5; i++) {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
         dates.push(formatDate(date));
@@ -97,7 +98,6 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
         return;
     }
 
-    // Сортируем по номеру пары
     const sorted = [...schedule].sort((a, b) => a.pair - b.pair);
     const hasChanges = sorted.some(p => p.changed === true);
 
@@ -109,7 +109,6 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
             </div>
     `;
 
-    // Группируем пары по номеру
     const pairsByNumber = {};
     sorted.forEach(pair => {
         const key = pair.pair;
@@ -119,13 +118,10 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
         pairsByNumber[key].push(pair);
     });
 
-    // Отображаем каждую пару
     Object.keys(pairsByNumber).sort((a, b) => a - b).forEach(pairNum => {
         const pairs = pairsByNumber[pairNum];
         const time = PAIR_TIMES[pairNum] || `${pairNum} пара`;
         const hasMultipleSubgroups = pairs.length > 1;
-
-        // Проверяем, есть ли изменения в этой группе пар
         const hasPairChanges = pairs.some(p => p.changed === true);
 
         html += `
@@ -138,7 +134,6 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
         `;
 
         if (hasMultipleSubgroups) {
-            // Если несколько подгрупп — показываем каждую отдельно
             pairs.forEach((pair, index) => {
                 const subgroupLabel = pair.subgroup ? `Подгруппа ${pair.subgroup}` : `Вариант ${index + 1}`;
                 html += `
@@ -155,7 +150,6 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
                 `;
             });
         } else {
-            // Одна пара — показываем компактно
             const pair = pairs[0];
             html += `
                 <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
@@ -220,6 +214,10 @@ const loadWeek = async () => {
         const schedule = scheduleData[dateStr] || [];
         const isToday = dateStr === todayStr;
 
+        // Пропускаем выходные (суббота и воскресенье)
+        const weekday = getWeekday(dateStr);
+        if (weekday === 'суббота' || weekday === 'воскресенье') continue;
+
         if (schedule.length > 0) {
             foundAny = true;
             totalPairs += schedule.length;
@@ -229,13 +227,12 @@ const loadWeek = async () => {
             html += `
                 <div class="day-schedule ${hasChanges ? 'has-changes' : ''} ${isToday ? 'today-highlight' : ''}">
                     <div class="day-title">
-                        ${isToday ? '⭐ ' : '📅 '} ${dateStr}, ${getWeekday(dateStr)}
+                        ${isToday ? '⭐ ' : '📅 '} ${dateStr}, ${weekday}
                         ${isToday ? '<span class="today-badge">СЕГОДНЯ</span>' : ''}
                         ${hasChanges ? '<span class="change-badge">🔄 Есть изменения</span>' : ''}
                     </div>
             `;
 
-            // Группируем по номеру пары
             const pairsByNumber = {};
             sorted.forEach(pair => {
                 const key = pair.pair;
