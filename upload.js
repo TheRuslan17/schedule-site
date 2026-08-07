@@ -66,26 +66,28 @@ function parseSchedule(data) {
     const schedule = {};
     let currentDate = '';
     let readingGroup = false;
-    let foundGroup = false;
 
     for (let row of data) {
-        // Ищем дату
+        // 1. Ищем дату (в строке с "Дата расписания:")
         if (row[0] && typeof row[0] === 'string' && row[0].includes('Дата расписания:')) {
             const match = row[0].match(/(\d{2}\.\d{2}\.\d{4})/);
             if (match) {
                 currentDate = match[1];
-                if (!schedule[currentDate]) schedule[currentDate] = [];
+                // Создаём массив для этой даты, если его ещё нет
+                if (!schedule[currentDate]) {
+                    schedule[currentDate] = [];
+                }
             }
+            continue; // Дату обработали, идём дальше
         }
 
-        // Ищем группу
+        // 2. Ищем группу "И-24-1"
         if (row[0] && typeof row[0] === 'string' && row[0].trim() === GROUP) {
             readingGroup = true;
-            foundGroup = true;
             continue;
         }
 
-        // Следующая группа — выходим
+        // 3. Если нашли следующую группу — прекращаем чтение
         if (readingGroup && row[0] && typeof row[0] === 'string') {
             if (row[0].trim().match(/^[А-Я]-\d{2}-\d$/)) {
                 readingGroup = false;
@@ -93,26 +95,34 @@ function parseSchedule(data) {
             }
         }
 
-        // Читаем пары
+        // 4. Читаем пары (если номер пары — число)
         if (readingGroup && row[0] && typeof row[0] === 'number') {
             const pairNum = row[0];
             const subject = row[4] ? String(row[4]).trim() : '';
             const teacher = row[7] ? String(row[7]).trim() : '';
             const room = row[8] ? String(row[8]).trim() : '';
 
+            // Добавляем только если есть предмет
             if (subject && subject !== '') {
-                schedule[currentDate].push({
-                    pair: pairNum,
-                    time: PAIR_TIMES[pairNum] || '',
-                    subject: subject,
-                    teacher: teacher,
-                    room: room
-                });
+                // Убеждаемся, что массив для текущей даты существует
+                if (schedule[currentDate]) {
+                    schedule[currentDate].push({
+                        pair: pairNum,
+                        time: PAIR_TIMES[pairNum] || '',
+                        subject: subject,
+                        teacher: teacher,
+                        room: room
+                    });
+                } else {
+                    console.warn(`Нет даты для пары: ${pairNum}, ${subject}`);
+                }
             }
         }
     }
 
-    if (!foundGroup) {
+    // Проверяем, нашлась ли группа
+    const found = Object.values(schedule).some(day => day.length > 0);
+    if (!found) {
         alert('Группа ' + GROUP + ' не найдена в файле!');
         return {};
     }
