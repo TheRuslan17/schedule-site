@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель расписания</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .admin-header h1 {
+            font-size: 26px;
+            color: #1a1a2e;
+        }
+
+        .admin-header .badge {
+            background: #4a6cf7;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+            background: #f8f9fc;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #4a6cf7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-primary {
+            background: #4a6cf7;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3a56d4;
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+        }
+
+        .btn-success {
+            background: #2da44e;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #22863a;
+        }
+
+        .btn-danger {
+            background: #cf222e;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #a0111f;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #4a6cf7;
+            border: 2px solid #4a6cf7;
+        }
+        .btn-outline:hover {
+            background: #4a6cf7;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e9ecf0;
+            color: #1a1a2e;
+        }
+        .btn-secondary:hover {
+            background: #d0d7de;
+        }
+
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 12px;
+        }
+
+        /* Список пар */
+        .pairs-list {
+            margin-top: 20px;
+        }
+
+        .pair-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #4a6cf7;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pair-item .pair-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            flex: 1;
+        }
+
+        .pair-item .pair-info span {
+            font-size: 14px;
+        }
+
+        .pair-item .pair-info .label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .pair-item .pair-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #8b949e;
+            padding: 40px 0;
+        }
+
+        .day-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .day-tab {
+            padding: 8px 18px;
+            border: 1px solid #d0d7de;
+            border-radius: 30px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .day-tab.active {
+            background: #4a6cf7;
+            color: white;
+            border-color: #4a6cf7;
+        }
+
+        .day-tab:hover:not(.active) {
+            background: #f0f2f5;
+        }
+
+        .pair-count {
+            font-size: 13px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .pair-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pair-item .pair-actions {
+                justify-content: flex-end;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>⚙️ Админ-панель</h1>
+                <p style="color: #666; margin-top: 4px;">Управление расписанием для группы <strong>И-24-1</strong></p>
+            </div>
+            <div>
+                <span class="badge">🔒 Только для админа</span>
+            </div>
+        </div>
+
+        <!-- ===== ТЕКУЩЕЕ РАСПИСАНИЕ ===== -->
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3 style="color: #1a1a2e;">📋 Текущее расписание</h3>
+                <div>
+                    <button class="btn btn-success btn-sm" onclick="downloadSchedule()">💾 Скачать JSON</button>
+                    <button class="btn btn-secondary btn-sm" onclick="loadScheduleData()">🔄 Обновить</button>
+                </div>
+            </div>
+            <div class="day-tabs" id="dayTabs"></div>
+            <div id="pairsList">
+                <div class="empty-state">⏳ Загрузка...</div>
+            </div>
+        </div>
+
+        <!-- ===== ДОБАВЛЕНИЕ ПАРЫ ===== -->
+        <div style="background: #f0f4ff; padding: 20px 24px; border-radius: 12px; border: 2px dashed #4a6cf7;">
+            <h3 style="color: #1a1a2e; margin-bottom: 16px;">➕ Добавить пару</h3>
+            <form id="addPairForm" class="form-grid" onsubmit="addPair(event)">
+                <div class="form-group">
+                    <label for="pairDate">📅 Дата</label>
+                    <input type="date" id="pairDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pairNumber">🔢 Номер пары</label>
+                    <select id="pairNumber" required>
+                        <option value="1">1 пара (08:00-09:30)</option>
+                        <option value="2" selected>2 пара (09:50-11:20)</option>
+                        <option value="3">3 пара (11:50-13:20)</option>
+                        <option value="4">4 пара (13:30-15:00)</option>
+                        <option value="5">5 пара (15:10-16:40)</option>
+                        <option value="6">6 пара (16:50-18:20)</option>
+                        <option value="7">7 пара (18:30-20:00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pairSubgroup">👥 Подгруппа (если есть)</label>
+                    <input type="text" id="pairSubgroup" placeholder="1 или 2" style="max-width: 80px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="pairSubject">📚 Дисциплина *</label>
+                    <input type="text" id="pairSubject" placeholder="Например: Основы философии" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pairTeacher">👨‍🏫 Преподаватель</label>
+                    <input type="text" id="pairTeacher" placeholder="Иванов Иван Иванович">
+                </div>
+
+                <div class="form-group">
+                    <label for="pairRoom">📍 Аудитория</label>
+                    <input type="text" id="pairRoom" placeholder="каб. 118 или Спорт.зал">
+                </div>
+
+                <div class="form-group full-width" style="display: flex; gap: 10px; flex-wrap: wrap; padding-top: 6px;">
+                    <button type="submit" class="btn btn-primary">➕ Добавить пару</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">🧹 Очистить форму</button>
+                </div>
+            </form>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e9ecf0; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="index.html" class="btn btn-secondary">← На главную</a>
+            <button class="btn btn-danger" onclick="clearAllSchedule()">🗑️ Очистить всё расписание</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let scheduleData = {};
+        let currentDate = '';
+
+        const GROUP = "И-24-1";
+        const PAIR_TIMES = {
+            1: "08:00-09:30",
+            2: "09:50-11:20",
+            3: "11:50-13:20",
+            4: "13:30-15:00",
+            5: "15:10-16:40",
+            6: "16:50-18:20",
+            7: "18:30-20:00"
+        };
+
+        const weekdays = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+
+        // ========== ЗАГРУЗКА ДАННЫХ ==========
+        async function loadScheduleData() {
+            try {
+                const response = await fetch('schedule.json?t=' + Date.now());
+                if (!response.ok) throw new Error('Файл не найден');
+                scheduleData = await response.json();
+                
+                // Если в файле есть группа, оставляем только её
+                const groupData = {};
+                for (const [date, pairs] of Object.entries(scheduleData)) {
+                    if (pairs.length > 0) {
+                        groupData[date] = pairs;
+                    }
+                }
+                scheduleData = groupData;
+
+                updateUI();
+            } catch (e) {
+                scheduleData = {};
+                document.getElementById('pairsList').innerHTML = `
+                    <div class="empty-state">📭 Нет загруженного расписания</div>
+                `;
+                document.getElementById('dayTabs').innerHTML = '';
+            }
+        }
+
+        // ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ==========
+        function updateUI() {
+            const dates = Object.keys(scheduleData).sort();
+            
+            if (dates.length === 0) {
+                document.getElementById('pairsList').innerHTML = `
+                    <div class="empty-state">📭 Нет пар на эту неделю</div>
+                `;
+                document.getElementById('dayTabs').innerHTML = '';
+                return;
+            }
+
+            // Создаём вкладки по дням
+            let tabsHtml = '';
+            dates.forEach(date => {
+                const count = scheduleData[date].length;
+                const isActive = date === currentDate || (currentDate === '' && date === dates[0]);
+                tabsHtml += `
+                    <button class="day-tab ${isActive ? 'active' : ''}" onclick="selectDate('${date}')">
+                        ${date} <span class="pair-count">(${count})</span>
+                    </button>
+                `;
+            });
+            document.getElementById('dayTabs').innerHTML = tabsHtml;
+
+            // Выбираем первый день, если ничего не выбрано
+            if (!currentDate || !scheduleData[currentDate]) {
+                currentDate = dates[0];
+            }
+
+            renderPairs(currentDate);
+        }
+
+        function renderPairs(date) {
+            const pairs = scheduleData[date] || [];
+            const container = document.getElementById('pairsList');
+
+            if (pairs.length === 0) {
+                container.innerHTML = `<div class="empty-state">📭 Нет пар на ${date}</div>`;
+                return;
+            }
+
+            // Сортируем по номеру пары
+            pairs.sort((a, b) => a.pair - b.pair);
+
+            let html = `<div style="margin-bottom: 8px; color: #666; font-size: 14px;">
+                📅 ${date}, ${getWeekday(date)} — ${pairs.length} пар
+            </div>`;
+
+            pairs.forEach((pair, index) => {
+                const time = PAIR_TIMES[pair.pair] || `${pair.pair} пара`;
+                const subgroup = pair.subgroup ? `(подгр. ${pair.subgroup})` : '';
+                html += `
+                    <div class="pair-item">
+                        <div class="pair-info">
+                            <span><span class="label">🕒</span> ${time}</span>
+                            <span><span class="label">📚</span> ${pair.subject} ${subgroup}</span>
+                            <span><span class="label">👨‍🏫</span> ${pair.teacher || '—'}</span>
+                            <span><span class="label">📍</span> ${pair.room || '—'}</span>
+                        </div>
+                        <div class="pair-actions">
+                            <button class="btn btn-danger btn-sm" onclick="deletePair('${date}', ${index})">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getWeekday(dateStr) {
+            const parts = dateStr.split('.');
+            const d = new Date(parts[2], parts[1] - 1, parts[0]);
+            return weekdays[d.getDay()];
+        }
+
+        function selectDate(date) {
+            currentDate = date;
+            updateUI();
+        }
+
+        // ========== ДОБАВЛЕНИЕ ПАРЫ ==========
+        function addPair(event) {
+            event.preventDefault();
+
+            const dateInput = document.getElementById('pairDate');
+            const pairNum = parseInt(document.getElementById('pairNumber').value);
+            const subgroup = document.getElementById('pairSubgroup').value.trim();
+            const subject = document.getElementById('pairSubject').value.trim();
+            const teacher = document.getElementById('pairTeacher').value.trim();
+            const room = document.getElementById('pairRoom').value.trim();
+
+            if (!dateInput.value) {
+                alert('Выберите дату!');
+                return;
+            }
+
+            if (!subject) {
+                alert('Введите название дисциплины!');
+                return;
+            }
+
+            // Форматируем дату
+            const parts = dateInput.value.split('-');
+            const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+
+            // Создаём пару
+            const pair = {
+                pair: pairNum,
+                time: PAIR_TIMES[pairNum] || '',
+                subject: subject,
+                teacher: teacher || '',
+                room: room || ''
+            };
+
+            if (subgroup) {
+                pair.subgroup = subgroup;
+            }
+
+            // Добавляем в расписание
+            if (!scheduleData[dateStr]) {
+                scheduleData[dateStr] = [];
+            }
+            scheduleData[dateStr].push(pair);
+
+            // Обновляем интерфейс
+            currentDate = dateStr;
+            updateUI();
+
+            // Очищаем форму (кроме даты)
+            document.getElementById('pairSubgroup').value = '';
+            document.getElementById('pairSubject').value = '';
+            document.getElementById('pairTeacher').value = '';
+            document.getElementById('pairRoom').value = '';
+            document.getElementById('pairSubject').focus();
+
+            // Показываем уведомление
+            showNotification('✅ Пара добавлена!');
+        }
+
+        // ========== УДАЛЕНИЕ ПАРЫ ==========
+        function deletePair(date, index) {
+            if (!confirm(`Удалить пару "${scheduleData[date][index].subject}"?`)) return;
+
+            scheduleData[date].splice(index, 1);
+            if (scheduleData[date].length === 0) {
+                delete scheduleData[date];
+            }
+
+            updateUI();
+            showNotification('🗑️ Пара удалена');
+        }
+
+        // ========== ОЧИСТКА ВСЕГО ==========
+        function clearAllSchedule() {
+            if (!confirm('⚠️ Удалить ВСЁ расписание? Это действие нельзя отменить!')) return;
+            if (!confirm('Вы уверены?')) return;
+
+            scheduleData = {};
+            updateUI();
+            showNotification('🗑️ Всё расписание очищено');
+        }
+
+        // ========== СКАЧИВАНИЕ JSON ==========
+        function downloadSchedule() {
+            if (Object.keys(scheduleData).length === 0) {
+                alert('Расписание пустое!');
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'schedule.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('💾 Файл schedule.json скачан!');
+        }
+
+        // ========== ОЧИСТКА ФОРМЫ ==========
+        function clearForm() {
+            document.getElementById('pairSubgroup').value = '';
+            document.getElementById('pairSubject').value = '';
+            document.getElementById('pairTeacher').value = '';
+            document.getElementById('pairRoom').value = '';
+            document.getElementById('pairSubject').focus();
+        }
+
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(text) {
+            const old = document.querySelector('.notification-toast');
+            if (old) old.remove();
+
+            const div = document.createElement('div');
+            div.className = 'notification-toast';
+            div.textContent = text;
+            Object.assign(div.style, {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                background: '#1a1a2e',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '30px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                fontSize: '14px',
+                zIndex: '1000',
+                animation: 'fadeIn 0.3s ease',
+                maxWidth: '90%'
+            });
+            document.body.appendChild(div);
+
+            setTimeout(() => {
+                div.style.opacity = '0';
+                div.style.transition = 'opacity 0.5s';
+                setTimeout(() => div.remove(), 500);
+            }, 2500);
+        }
+
+        // Добавляем анимацию
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ========== УСТАНОВКА ДАТЫ ПО УМОЛЧАНИЮ ==========
+        function setDefaultDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('pairDate').value = `${year}-${month}-${day}`;
+        }
+
+        // ========== ЗАГРУЗКА ПРИ СТАРТЕ ==========
+        setDefaultDate();
+        loadScheduleData();
+    </script>
+</body>
+</html>
