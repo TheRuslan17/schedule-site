@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание колледжа</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📅 Расписание занятий</h1>
+            <p id="groupInfo">Группа: <strong>И-24-1</strong></p>
+        </header>
+
+        <nav class="controls">
+            <button onclick="loadToday()">📅 Сегодня</button>
+            <button onclick="loadTomorrow()">📅 Завтра</button>
+            <button onclick="loadWeek()">📋 Вся неделя</button>
+            <input type="date" id="datePicker" onchange="loadDate(this.value)">
+        </nav>
+
+        <div id="scheduleContainer">
+            <div class="loader">⏳ Загрузка расписания...</div>
+        </div>
+
+        <footer>
+            <a href="upload.html">⚙️ Загрузить новое расписание (админ)</a>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
