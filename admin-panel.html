@@ -5,149 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель И-24-1</title>
     <style>
-        /* ===== ЗАЩИТА ОТ ИНСПЕКТОРА ===== */
+        /* ===== ЗАЩИТА ===== */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
-        
-        /* ===== СТИЛИ ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
+        :root {
+            --primary: #4a6cf7;
+            --primary-dark: #3a56d4;
+            --bg: #f0f4f9;
+            --white: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #4f5b69;
+            --border: #d0d7de;
+            --radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --warning: #f59f00;
+            --warning-bg: #fff3cd;
+            --danger: #cf222e;
+            --success: #2da44e;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #eef2f7;
-            padding: 20px;
+            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            padding: 16px;
             min-height: 100vh;
         }
+
         .admin-container {
-            max-width: 1000px;
+            max-width: 960px;
             margin: 0 auto;
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            box-shadow: var(--shadow);
         }
-        .admin-header {
+
+        /* ===== ШАПКА ===== */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 18px;
-            margin-bottom: 24px;
             flex-wrap: wrap;
             gap: 12px;
-        }
-        .admin-header h1 {
-            font-size: 26px;
-            color: #1a1a2e;
-        }
-        .admin-header .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-top: 4px;
-        }
-        .admin-header .badge {
-            background: #4a6cf7;
-            color: white;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .admin-header .badge.green {
-            background: #2da44e;
-        }
-        .admin-header .badge.red {
-            background: #cf222e;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px 20px;
-            background: #f8f9fc;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
+        .header h1 {
+            font-size: 22px;
+            color: var(--text);
         }
-        .form-group {
+
+        .header .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-        .form-group label .required {
-            color: #cf222e;
-        }
-        .form-group input,
-        .form-group select {
-            padding: 9px 12px;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            transition: border 0.2s;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #4a6cf7;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.green {
+            background: var(--success);
+        }
+        .badge.warning {
+            background: var(--warning);
+            color: #1a1a2e;
+        }
+
+        /* ===== КНОПКИ ===== */
         .btn {
-            padding: 10px 28px;
+            padding: 8px 20px;
             border: none;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.25s;
             text-decoration: none;
             display: inline-block;
         }
+
         .btn-primary {
-            background: #4a6cf7;
+            background: var(--primary);
             color: white;
         }
         .btn-primary:hover {
-            background: #3a56d4;
+            background: var(--primary-dark);
             box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
         }
+
         .btn-success {
-            background: #2da44e;
+            background: var(--success);
             color: white;
         }
         .btn-success:hover {
             background: #22863a;
         }
+
         .btn-danger {
-            background: #cf222e;
+            background: var(--danger);
             color: white;
         }
         .btn-danger:hover {
             background: #a0111f;
         }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #1a1a2e;
+        }
+        .btn-warning:hover {
+            background: #e67700;
+        }
+
         .btn-secondary {
             background: #e9ecf0;
-            color: #1a1a2e;
+            color: var(--text);
         }
         .btn-secondary:hover {
             background: #d0d7de;
         }
+
         .btn-sm {
             padding: 5px 14px;
             font-size: 12px;
@@ -157,145 +158,285 @@
             font-size: 11px;
         }
 
+        /* ===== ФОРМА ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 16px;
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        }
+
+        .form-group .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 6px;
+        }
+
+        .form-group .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--warning);
+        }
+
+        .form-group .checkbox-group label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .form-group .checkbox-group .warning-text {
+            color: var(--warning);
+            font-weight: 600;
+        }
+
         .quick-templates {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
-            margin-bottom: 14px;
-            padding: 12px 16px;
+            margin-bottom: 12px;
+            padding: 10px 14px;
             background: #f8f9fc;
-            border-radius: 10px;
+            border-radius: 8px;
         }
+
         .quick-templates .label {
             font-size: 13px;
             font-weight: 600;
-            color: #4f5b69;
-            margin-right: 8px;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
-        }
-        .quick-templates .btn {
-            font-size: 12px;
-            padding: 5px 14px;
+            margin-right: 6px;
         }
 
-        .pairs-list {
-            margin-top: 16px;
+        .quick-templates .btn {
+            font-size: 11px;
+            padding: 4px 12px;
         }
+
+        /* ===== СПИСОК ПАР ===== */
+        .pairs-list {
+            margin-top: 12px;
+        }
+
         .pair-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
+            padding: 8px 14px;
             background: #f8f9fc;
             border-radius: 8px;
-            margin-bottom: 6px;
-            border-left: 4px solid #4a6cf7;
+            margin-bottom: 4px;
+            border-left: 4px solid var(--primary);
             flex-wrap: wrap;
-            gap: 6px 12px;
+            gap: 4px 10px;
+            transition: 0.2s;
         }
+
+        .pair-item.changed {
+            border-left-color: var(--warning);
+            background: var(--warning-bg);
+        }
+
         .pair-item .pair-info {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px 16px;
+            gap: 4px 12px;
             flex: 1;
             align-items: center;
+            font-size: 14px;
         }
-        .pair-item .pair-info .pair-number {
+
+        .pair-item .pair-info .num {
             font-weight: 700;
-            color: #4a6cf7;
-            min-width: 70px;
+            color: var(--primary);
+            min-width: 60px;
         }
-        .pair-item .pair-info .pair-subject {
+
+        .pair-item.changed .pair-info .num {
+            color: var(--warning);
+        }
+
+        .pair-item .pair-info .subject {
             font-weight: 500;
-            color: #1a1a2e;
         }
-        .pair-item .pair-info .pair-tag {
-            font-size: 12px;
-            padding: 2px 10px;
+
+        .pair-item .pair-info .tag {
+            font-size: 11px;
+            padding: 1px 8px;
             border-radius: 30px;
             background: #e9ecf0;
-            color: #4f5b69;
+            color: var(--text-secondary);
         }
-        .pair-item .pair-info .pair-tag.subgroup {
+
+        .pair-item .pair-info .tag.subgroup {
             background: #ddf4ff;
             color: #0550ae;
         }
-        .pair-item .pair-info .pair-tag.room {
+
+        .pair-item .pair-info .tag.room {
             background: #eef3ff;
-            color: #4a6cf7;
+            color: var(--primary);
         }
+
+        .pair-item .pair-info .tag.changed-tag {
+            background: var(--warning);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
         .pair-item .pair-actions {
             display: flex;
             gap: 4px;
-            align-items: center;
         }
 
         .empty-state {
             text-align: center;
             color: #8b949e;
-            padding: 30px 0;
+            padding: 24px 0;
         }
 
+        /* ===== ВКЛАДКИ ===== */
         .day-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
+            gap: 6px;
             flex-wrap: wrap;
+            margin-bottom: 12px;
         }
+
         .day-tab {
-            padding: 6px 16px;
-            border: 1px solid #d0d7de;
+            padding: 5px 14px;
+            border: 1px solid var(--border);
             border-radius: 30px;
             background: white;
             cursor: pointer;
             font-size: 13px;
             transition: 0.2s;
+            position: relative;
         }
+
         .day-tab.active {
-            background: #4a6cf7;
+            background: var(--primary);
             color: white;
-            border-color: #4a6cf7;
+            border-color: var(--primary);
         }
+
+        .day-tab.has-changes {
+            border-color: var(--warning);
+        }
+
+        .day-tab.has-changes.active {
+            background: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .day-tab .change-dot {
+            display: none;
+            width: 8px;
+            height: 8px;
+            background: var(--warning);
+            border-radius: 50%;
+            position: absolute;
+            top: -3px;
+            right: -3px;
+        }
+
+        .day-tab.has-changes .change-dot {
+            display: block;
+        }
+
         .day-tab:hover:not(.active) {
             background: #f0f2f5;
         }
+
         .pair-count {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
             background: #e9ecf0;
-            padding: 0 8px;
+            padding: 0 6px;
             border-radius: 20px;
         }
+
         .day-tab.active .pair-count {
             background: rgba(255, 255, 255, 0.2);
             color: white;
         }
 
-        .stats-bar {
+        /* ===== СТАТИСТИКА ===== */
+        .stats {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             flex-wrap: wrap;
-            padding: 10px 0;
+            padding: 6px 0 12px 0;
             font-size: 14px;
-            color: #4f5b69;
-        }
-        .stats-bar span {
-            background: #f0f2f5;
-            padding: 4px 14px;
-            border-radius: 30px;
-        }
-        .stats-bar strong {
-            color: #1a1a2e;
+            color: var(--text-secondary);
         }
 
-        .notification-toast {
+        .stats span {
+            background: #f0f2f5;
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
+
+        .stats strong {
+            color: var(--text);
+        }
+
+        .stats .changed-count {
+            background: var(--warning-bg);
+            color: #856404;
+        }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: #1a1a2e;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 22px;
             border-radius: 30px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             font-size: 14px;
@@ -303,6 +444,12 @@
             animation: fadeIn 0.3s ease;
             max-width: 90%;
         }
+
+        .toast.warning {
+            background: var(--warning);
+            color: #1a1a2e;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -314,13 +461,63 @@
             }
         }
 
+        .footer-actions {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e9ecf0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== ИНФОРМАЦИОННАЯ ПАНЕЛЬ ===== */
+        .info-panel {
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .info-panel .changes-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-panel .changes-info .icon {
+            font-size: 18px;
+        }
+
+        .info-panel .changes-info .text {
+            color: var(--text-secondary);
+        }
+
+        .info-panel .changes-info .text strong {
+            color: var(--warning);
+        }
+
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
+            .admin-container {
+                padding: 18px 16px;
+            }
             .form-grid {
                 grid-template-columns: 1fr;
                 padding: 16px;
             }
-            .admin-container {
-                padding: 16px;
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
             .pair-item {
                 flex-direction: column;
@@ -329,25 +526,144 @@
             .pair-item .pair-actions {
                 justify-content: flex-end;
             }
-            .admin-header {
+            .quick-templates .label {
+                width: 100%;
+            }
+            .info-panel {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            .quick-templates .label {
-                width: 100%;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .admin-container {
+                padding: 12px 10px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .form-grid {
+                padding: 12px;
+                gap: 10px;
+            }
+            .btn {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+            .pair-item .pair-info {
+                font-size: 13px;
+            }
+            .stats {
+                font-size: 12px;
+                gap: 8px;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d1117;
+                --white: #161b22;
+                --text: #f0f6fc;
+                --text-secondary: #8b949e;
+                --border: #30363d;
+                --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                --warning-bg: #1c1a0d;
+            }
+            .header {
+                border-bottom-color: #21262d;
+            }
+            .form-grid {
+                background: #0d1117;
+            }
+            .form-group input,
+            .form-group select {
+                background: #0d1117;
+                color: #f0f6fc;
+                border-color: #30363d;
+            }
+            .pair-item {
+                background: #0d1117;
+            }
+            .pair-item.changed {
+                background: #1c1a0d;
+            }
+            .pair-item .pair-info .tag {
+                background: #21262d;
+                color: #8b949e;
+            }
+            .pair-item .pair-info .tag.subgroup {
+                background: #1c2333;
+                color: #58a6ff;
+            }
+            .pair-item .pair-info .tag.room {
+                background: #1c2333;
+                color: #58a6ff;
+            }
+            .pair-item .pair-info .tag.changed-tag {
+                background: var(--warning);
+                color: #1a1a2e;
+            }
+            .day-tab {
+                background: #0d1117;
+                border-color: #30363d;
+                color: #f0f6fc;
+            }
+            .day-tab.active {
+                background: var(--primary);
+                color: white;
+            }
+            .day-tab.has-changes.active {
+                background: var(--warning);
+            }
+            .day-tab:hover:not(.active) {
+                background: #21262d;
+            }
+            .stats span {
+                background: #21262d;
+            }
+            .stats .changed-count {
+                background: #1c1a0d;
+                color: #fcc419;
+            }
+            .quick-templates {
+                background: #0d1117;
+            }
+            .btn-secondary {
+                background: #21262d;
+                color: #f0f6fc;
+            }
+            .btn-secondary:hover {
+                background: #30363d;
+            }
+            .footer-actions {
+                border-top-color: #21262d;
+            }
+            .pair-count {
+                background: #21262d;
+                color: #8b949e;
+            }
+            .day-tab.active .pair-count {
+                background: rgba(255, 255, 255, 0.15);
+                color: white;
+            }
+            .info-panel {
+                background: #0d1117;
             }
         }
     </style>
 </head>
 <body>
-    <div class="admin-container" id="adminContainer">
+    <div class="admin-container">
         <!-- ===== ШАПКА ===== -->
-        <div class="admin-header">
+        <div class="header">
             <div>
                 <h1>⚙️ Админ-панель</h1>
                 <div class="subtitle">Группа <strong>И-24-1</strong> · 3 курс · 1 семестр</div>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div class="header-actions">
                 <span class="badge">🔒 Защищено</span>
                 <span class="badge green">📅 7 дисциплин</span>
                 <button class="btn btn-secondary btn-sm" onclick="logout()">🚪 Выйти</button>
@@ -355,17 +671,18 @@
         </div>
 
         <!-- ===== СТАТИСТИКА ===== -->
-        <div class="stats-bar" id="statsBar">
+        <div class="stats" id="statsBar">
             <span>📚 Всего пар: <strong id="totalPairs">0</strong></span>
             <span>📅 Дней: <strong id="totalDays">0</strong></span>
+            <span class="changed-count" id="changedCount">🔄 Изменений: <strong id="totalChanges">0</strong></span>
         </div>
 
         <!-- ===== ТЕКУЩЕЕ РАСПИСАНИЕ ===== -->
-        <div style="margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-                <h3 style="color: #1a1a2e; margin: 0;">📋 Текущее расписание</h3>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-success btn-sm" onclick="downloadSchedule()">💾 Скачать JSON</button>
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                <h3 style="color: var(--text); font-size: 17px;">📋 Текущее расписание</h3>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button class="btn btn-success btn-sm" onclick="downloadSchedule()">💾 Скачать</button>
                     <button class="btn btn-secondary btn-sm" onclick="loadScheduleData()">🔄 Обновить</button>
                 </div>
             </div>
@@ -375,17 +692,16 @@
             </div>
         </div>
 
-        <!-- ===== ДОБАВЛЕНИЕ ПАРЫ ===== -->
-        <div style="background: #f0f4ff; padding: 20px 24px; border-radius: 12px; border: 2px dashed #4a6cf7;">
-            <h3 style="color: #1a1a2e; margin-bottom: 16px;">➕ Добавить пару</h3>
+        <!-- ===== ДОБАВЛЕНИЕ ===== -->
+        <div style="background: #f0f4ff; padding: 16px 20px; border-radius: 12px; border: 2px dashed var(--primary);">
+            <h3 style="color: var(--text); font-size: 17px; margin-bottom: 12px;">➕ Добавить пару</h3>
 
-            <!-- Быстрые шаблоны -->
             <div class="quick-templates">
                 <span class="label">⚡ Быстрый выбор:</span>
                 <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Технология разработки программного обеспечения')">💻 ТРПО</button>
                 <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Инструментальные средства разработки программного обеспечения')">🛠️ ИСРПО</button>
-                <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Математическое моделирование')">📐 Мат. моделирование</button>
-                <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Основы финансовой грамотности')">💰 Фин. грамотность</button>
+                <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Математическое моделирование')">📐 Моделирование</button>
+                <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Основы финансовой грамотности')">💰 Финансы</button>
                 <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Иностранный язык в профессиональной деятельности')">🌍 Иностранный</button>
                 <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Разработка мобильных приложений')">📱 Моб. приложения</button>
                 <button class="btn btn-secondary btn-sm" onclick="fillTemplate('Физическая культура')">🏃 Физкультура</button>
@@ -397,21 +713,21 @@
                     <input type="date" id="pairDate" required>
                 </div>
                 <div class="form-group">
-                    <label for="pairNumber">🔢 Номер пары <span class="required">*</span></label>
+                    <label for="pairNumber">🔢 Номер <span class="required">*</span></label>
                     <select id="pairNumber" required>
-                        <option value="1">1 пара (08:00-09:30)</option>
-                        <option value="2" selected>2 пара (09:50-11:20)</option>
-                        <option value="3">3 пара (11:50-13:20)</option>
-                        <option value="4">4 пара (13:30-15:00)</option>
-                        <option value="5">5 пара (15:10-16:40)</option>
-                        <option value="6">6 пара (16:50-18:20)</option>
-                        <option value="7">7 пара (18:30-20:00)</option>
+                        <option value="1">1 (08:00-09:30)</option>
+                        <option value="2" selected>2 (09:50-11:20)</option>
+                        <option value="3">3 (11:50-13:20)</option>
+                        <option value="4">4 (13:30-15:00)</option>
+                        <option value="5">5 (15:10-16:40)</option>
+                        <option value="6">6 (16:50-18:20)</option>
+                        <option value="7">7 (18:30-20:00)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="pairSubject">📚 Дисциплина <span class="required">*</span></label>
                     <select id="pairSubject" required onchange="updateFields()">
-                        <option value="">— Выберите дисциплину —</option>
+                        <option value="">— Выберите —</option>
                         <option value="Технология разработки программного обеспечения">Технология разработки ПО</option>
                         <option value="Инструментальные средства разработки программного обеспечения">Инструментальные средства разработки ПО</option>
                         <option value="Математическое моделирование">Математическое моделирование</option>
@@ -431,15 +747,11 @@
                 </div>
                 <div class="form-group">
                     <label for="pairTeacher">👨‍🏫 Преподаватель</label>
-                    <select id="pairTeacher">
-                        <option value="">— Выберите —</option>
-                    </select>
+                    <select id="pairTeacher"><option value="">—</option></select>
                 </div>
                 <div class="form-group">
                     <label for="pairRoom">📍 Аудитория</label>
-                    <select id="pairRoom">
-                        <option value="">— Выберите —</option>
-                    </select>
+                    <select id="pairRoom"><option value="">—</option></select>
                 </div>
                 <div class="form-group">
                     <label for="pairBuilding">🏢 Корпус</label>
@@ -447,68 +759,71 @@
                         <option value="">—</option>
                         <option value="Корпус 1">Корпус 1</option>
                         <option value="Корпус 2">Корпус 2</option>
-                        <option value="Корпус 3">Корпус 3</option>
                     </select>
                 </div>
-                <div class="form-group full-width" style="display: flex; gap: 10px; flex-wrap: wrap; padding-top: 6px;">
-                    <button type="submit" class="btn btn-primary">➕ Добавить пару</button>
+
+                <!-- ===== НОВЫЙ ПУНКТ: ИЗМЕНЕНИЕ ===== -->
+                <div class="form-group full-width" style="border-top: 1px solid #e9ecf0; padding-top: 12px; margin-top: 4px;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isChanged">
+                        <label for="isChanged">
+                            <span class="warning-text">🔄 ИЗМЕНЕНИЕ</span>
+                            <span style="color: var(--text-secondary); font-weight: 400;">
+                                — отметить, что эта пара была изменена
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group full-width" style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 4px;">
+                    <button type="submit" class="btn btn-primary">➕ Добавить</button>
                     <button type="button" class="btn btn-secondary" onclick="clearForm()">🧹 Очистить</button>
                 </div>
             </form>
         </div>
 
-        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e9ecf0; display: flex; gap: 12px; flex-wrap: wrap;">
+        <div class="footer-actions">
             <a href="index.html" class="btn btn-secondary">← На главную</a>
+            <button class="btn btn-warning" onclick="clearAllChanges()">🔄 Сбросить все ИЗМЕНЕНИЯ</button>
             <button class="btn btn-danger" onclick="clearAllSchedule()">🗑️ Очистить всё</button>
         </div>
     </div>
 
     <script>
-        // =============================================
-        // ===== МАКСИМАЛЬНАЯ ЗАЩИТА АДМИНКИ =====
-        // =============================================
-
-        // ===== 1. ПРОВЕРКА СЕССИИ =====
+        // ============================================
+        // ЗАЩИТА
+        // ============================================
         (function checkAccess() {
             const token = sessionStorage.getItem('admin_token');
-            const password = "12313456"; // Должен совпадать с login.html
+            const password = "12313456";
             const expected = btoa(password + '_secure');
-            
             if (token !== expected) {
-                // Нет доступа — кидаем на логин
                 window.location.replace('login.html');
                 return;
             }
         })();
 
-        // ===== 2. ЗАЩИТА ОТ ИНСПЕКТОРА =====
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12') { e.preventDefault(); return false; }
-            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || 
-                e.key === 's' || e.key === 'S' ||
-                (e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')))) {
+            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' ||
+                    e.key === 's' || e.key === 'S' ||
+                    (e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')))) {
                 e.preventDefault();
                 return false;
             }
         });
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
         document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+        window.onerror = function() { return true; };
 
-        // ===== 3. ОБРАБОТКА ОШИБОК (не показываем детали) =====
-        window.onerror = function() {
-            return true;
-        };
-
-        // ===== 4. ВЫХОД =====
         function logout() {
             sessionStorage.removeItem('admin_token');
             window.location.replace('login.html');
         }
 
-        // =============================================
-        // ===== ОСТАЛЬНАЯ ЛОГИКА АДМИНКИ =====
-        // =============================================
-
+        // ============================================
+        // ЛОГИКА АДМИНКИ
+        // ============================================
         const SUBJECT_DB = {
             "Технология разработки программного обеспечения": { teachers: [], rooms: [], hasSubgroups: false },
             "Инструментальные средства разработки программного обеспечения": { teachers: [], rooms: [], hasSubgroups: false },
@@ -541,8 +856,8 @@
             const roomSelect = document.getElementById('pairRoom');
             const subgroupSelect = document.getElementById('pairSubgroup');
 
-            teacherSelect.innerHTML = '<option value="">— Выберите —</option>';
-            roomSelect.innerHTML = '<option value="">— Выберите —</option>';
+            teacherSelect.innerHTML = '<option value="">—</option>';
+            roomSelect.innerHTML = '<option value="">—</option>';
 
             if (subject && SUBJECT_DB[subject]) {
                 const data = SUBJECT_DB[subject];
@@ -575,7 +890,7 @@
             updateFields();
             const roomSelect = document.getElementById('pairRoom');
             if (roomSelect.options.length > 1) roomSelect.selectedIndex = 1;
-            showNotification('📌 Шаблон "' + subject + '" загружен');
+            showToast('📌 Шаблон "' + subject + '" загружен');
         }
 
         async function loadScheduleData() {
@@ -594,7 +909,8 @@
                 updateUI();
             } catch (e) {
                 scheduleData = {};
-                document.getElementById('pairsList').innerHTML = `<div class="empty-state">📭 Нет загруженного расписания</div>`;
+                document.getElementById('pairsList').innerHTML =
+                    `<div class="empty-state">📭 Нет загруженного расписания</div>`;
                 document.getElementById('dayTabs').innerHTML = '';
                 updateStats();
             }
@@ -603,18 +919,29 @@
         function updateUI() {
             const dates = Object.keys(scheduleData).sort();
             updateStats();
+
             if (dates.length === 0) {
-                document.getElementById('pairsList').innerHTML = `<div class="empty-state">📭 Нет пар. Добавьте первую пару!</div>`;
+                document.getElementById('pairsList').innerHTML =
+                    `<div class="empty-state">📭 Нет пар. Добавьте первую пару!</div>`;
                 document.getElementById('dayTabs').innerHTML = '';
                 return;
             }
+
             let tabsHtml = '';
             dates.forEach(date => {
                 const count = scheduleData[date].length;
+                const hasChanges = scheduleData[date].some(p => p.changed === true);
                 const isActive = date === currentDate || (currentDate === '' && date === dates[0]);
-                tabsHtml += `<button class="day-tab ${isActive ? 'active' : ''}" onclick="selectDate('${date}')">${date} <span class="pair-count">${count}</span></button>`;
+                tabsHtml += `
+                    <button class="day-tab ${isActive ? 'active' : ''} ${hasChanges ? 'has-changes' : ''}" 
+                            onclick="selectDate('${date}')">
+                        ${date} <span class="pair-count">${count}</span>
+                        <span class="change-dot"></span>
+                    </button>
+                `;
             });
             document.getElementById('dayTabs').innerHTML = tabsHtml;
+
             if (!currentDate || !scheduleData[currentDate]) currentDate = dates[0];
             renderPairs(currentDate);
         }
@@ -622,41 +949,68 @@
         function updateStats() {
             const dates = Object.keys(scheduleData);
             let total = 0;
-            dates.forEach(d => total += scheduleData[d].length);
+            let changes = 0;
+            dates.forEach(d => {
+                total += scheduleData[d].length;
+                changes += scheduleData[d].filter(p => p.changed === true).length;
+            });
             document.getElementById('totalPairs').textContent = total;
             document.getElementById('totalDays').textContent = dates.length;
+            document.getElementById('totalChanges').textContent = changes;
         }
 
         function renderPairs(date) {
             const pairs = scheduleData[date] || [];
             const container = document.getElementById('pairsList');
+
             if (pairs.length === 0) {
                 container.innerHTML = `<div class="empty-state">📭 Нет пар на ${date}</div>`;
                 return;
             }
+
             pairs.sort((a, b) => a.pair - b.pair);
-            let html = `<div style="margin-bottom: 8px; color: #666; font-size: 14px;">📅 ${date}, ${getWeekday(date)} — ${pairs.length} пар</div>`;
+
+            const hasChanges = pairs.some(p => p.changed === true);
+            let html = `
+                <div class="info-panel">
+                    <div class="changes-info">
+                        <span class="icon">📅</span>
+                        <span class="text">${date}, ${getWeekday(date)} — ${pairs.length} пар</span>
+                    </div>
+                    ${hasChanges ? `
+                        <div class="changes-info">
+                            <span class="icon">🔄</span>
+                            <span class="text"><strong>Есть изменения</strong> — нажмите ✏️ для просмотра</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
             pairs.forEach((pair, index) => {
                 const time = PAIR_TIMES[pair.pair] || `${pair.pair} пара`;
-                const subgroup = pair.subgroup ? `<span class="pair-tag subgroup">подгр. ${pair.subgroup}</span>` : '';
-                const room = pair.room ? `<span class="pair-tag room">📍 ${pair.room}</span>` : '';
-                const building = pair.building ? `<span class="pair-tag">🏢 ${pair.building}</span>` : '';
+                const subgroup = pair.subgroup ? `<span class="tag subgroup">подгр. ${pair.subgroup}</span>` : '';
+                const room = pair.room ? `<span class="tag room">📍 ${pair.room}</span>` : '';
+                const building = pair.building ? `<span class="tag">🏢 ${pair.building}</span>` : '';
                 const teacher = pair.teacher ? `👨‍🏫 ${pair.teacher}` : '';
+                const changedTag = pair.changed ? `<span class="tag changed-tag">🔄 ИЗМЕНЕНИЕ</span>` : '';
+
                 html += `
-                    <div class="pair-item">
+                    <div class="pair-item ${pair.changed ? 'changed' : ''}">
                         <div class="pair-info">
-                            <span class="pair-number">🕒 ${time}</span>
-                            <span class="pair-subject">${pair.subject}</span>
-                            ${subgroup} ${room} ${building}
-                            <span style="color: #4f5b69; font-size: 13px;">${teacher}</span>
+                            <span class="num">🕒 ${time}</span>
+                            <span class="subject">${pair.subject}</span>
+                            ${subgroup} ${room} ${building} ${changedTag}
+                            <span style="color: var(--text-secondary); font-size: 13px;">${teacher}</span>
                         </div>
                         <div class="pair-actions">
                             <button class="btn btn-secondary btn-xs" onclick="editPair('${date}', ${index})">✏️</button>
+                            <button class="btn btn-warning btn-xs" onclick="toggleChange('${date}', ${index})" title="Переключить статус ИЗМЕНЕНИЕ">🔄</button>
                             <button class="btn btn-danger btn-xs" onclick="deletePair('${date}', ${index})">✕</button>
                         </div>
                     </div>
                 `;
             });
+
             container.innerHTML = html;
         }
 
@@ -671,8 +1025,10 @@
             updateUI();
         }
 
+        // ===== ДОБАВЛЕНИЕ С ПОДДЕРЖКОЙ ИЗМЕНЕНИЙ =====
         function addPair(event) {
             event.preventDefault();
+
             const dateInput = document.getElementById('pairDate');
             const pairNum = parseInt(document.getElementById('pairNumber').value);
             const subgroup = document.getElementById('pairSubgroup').value;
@@ -680,6 +1036,7 @@
             const teacher = document.getElementById('pairTeacher').value.trim();
             const room = document.getElementById('pairRoom').value.trim();
             const building = document.getElementById('pairBuilding').value;
+            const isChanged = document.getElementById('isChanged').checked;
 
             if (!dateInput.value || !subject) {
                 alert('Заполните все обязательные поля!');
@@ -688,22 +1045,54 @@
 
             const parts = dateInput.value.split('-');
             const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
-            const pair = { pair: pairNum, subject: subject, teacher: teacher || '', room: room || '', building: building || '' };
+
+            const pair = {
+                pair: pairNum,
+                subject: subject,
+                teacher: teacher || '',
+                room: room || '',
+                building: building || ''
+            };
             if (subgroup) pair.subgroup = subgroup;
+            if (isChanged) pair.changed = true;
 
             if (!scheduleData[dateStr]) scheduleData[dateStr] = [];
             scheduleData[dateStr].push(pair);
+
             currentDate = dateStr;
             updateUI();
             clearForm();
-            showNotification('✅ Пара добавлена!');
+
+            if (isChanged) {
+                showToast('🔄 Пара добавлена с пометкой ИЗМЕНЕНИЕ!', 'warning');
+            } else {
+                showToast('✅ Пара добавлена!');
+            }
         }
 
+        // ===== ПЕРЕКЛЮЧЕНИЕ СТАТУСА ИЗМЕНЕНИЯ =====
+        function toggleChange(date, index) {
+            const pair = scheduleData[date][index];
+            if (!pair) return;
+
+            pair.changed = !pair.changed;
+            updateUI();
+
+            if (pair.changed) {
+                showToast('🔄 Пара отмечена как ИЗМЕНЕНИЕ', 'warning');
+            } else {
+                showToast('✅ Пометка ИЗМЕНЕНИЕ снята');
+            }
+        }
+
+        // ===== РЕДАКТИРОВАНИЕ С ПОДДЕРЖКОЙ ИЗМЕНЕНИЙ =====
         function editPair(date, index) {
             const pair = scheduleData[date][index];
             if (!pair) return;
+
             editingDate = date;
             editingIndex = index;
+
             const parts = date.split('.');
             document.getElementById('pairDate').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
             document.getElementById('pairNumber').value = pair.pair;
@@ -713,13 +1102,18 @@
             document.getElementById('pairTeacher').value = pair.teacher || '';
             document.getElementById('pairRoom').value = pair.room || '';
             document.getElementById('pairBuilding').value = pair.building || '';
+            document.getElementById('isChanged').checked = pair.changed || false;
 
             const btn = document.querySelector('#addPairForm button[type="submit"]');
-            btn.textContent = '✏️ Сохранить изменения';
+            btn.textContent = '✏️ Сохранить';
             btn.style.background = '#2da44e';
-            document.getElementById('addPairForm').onsubmit = function(e) { e.preventDefault();
-                saveEdit(); };
-            showNotification('✏️ Редактирование пары');
+
+            document.getElementById('addPairForm').onsubmit = function(e) {
+                e.preventDefault();
+                saveEdit();
+            };
+
+            showToast('✏️ Редактирование пары');
         }
 
         function saveEdit() {
@@ -730,12 +1124,22 @@
             const teacher = document.getElementById('pairTeacher').value.trim();
             const room = document.getElementById('pairRoom').value.trim();
             const building = document.getElementById('pairBuilding').value;
+            const isChanged = document.getElementById('isChanged').checked;
 
             if (!subject) { alert('Выберите дисциплину!'); return; }
+
             const parts = dateInput.value.split('-');
             const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
-            const pair = { pair: pairNum, subject: subject, teacher: teacher || '', room: room || '', building: building || '' };
+
+            const pair = {
+                pair: pairNum,
+                subject: subject,
+                teacher: teacher || '',
+                room: room || '',
+                building: building || ''
+            };
             if (subgroup) pair.subgroup = subgroup;
+            if (isChanged) pair.changed = true;
 
             if (dateStr !== editingDate) {
                 scheduleData[editingDate].splice(editingIndex, 1);
@@ -745,10 +1149,16 @@
             } else {
                 scheduleData[editingDate][editingIndex] = pair;
             }
+
             currentDate = dateStr;
             cancelEdit();
             updateUI();
-            showNotification('✅ Изменения сохранены!');
+
+            if (isChanged) {
+                showToast('🔄 Изменения сохранены с пометкой ИЗМЕНЕНИЕ!', 'warning');
+            } else {
+                showToast('✅ Изменения сохранены!');
+            }
         }
 
         function cancelEdit() {
@@ -761,24 +1171,45 @@
             clearForm();
         }
 
+        // ===== УДАЛЕНИЕ =====
         function deletePair(date, index) {
             const pair = scheduleData[date][index];
             if (!confirm(`Удалить пару "${pair.subject}"?`)) return;
             scheduleData[date].splice(index, 1);
             if (scheduleData[date].length === 0) delete scheduleData[date];
             updateUI();
-            showNotification('🗑️ Пара удалена');
+            showToast('🗑️ Пара удалена');
         }
 
+        // ===== СБРОС ВСЕХ ИЗМЕНЕНИЙ =====
+        function clearAllChanges() {
+            if (!confirm('🔄 Снять пометку ИЗМЕНЕНИЕ со всех пар?')) return;
+
+            let count = 0;
+            for (const date in scheduleData) {
+                scheduleData[date].forEach(p => {
+                    if (p.changed) {
+                        p.changed = false;
+                        count++;
+                    }
+                });
+            }
+
+            updateUI();
+            showToast(`🔄 Снято ${count} пометок ИЗМЕНЕНИЕ`);
+        }
+
+        // ===== ОЧИСТКА ВСЕГО =====
         function clearAllSchedule() {
             if (!confirm('⚠️ Удалить ВСЁ расписание? Это действие нельзя отменить!')) return;
             if (!confirm('Вы уверены?')) return;
             scheduleData = {};
             currentDate = '';
             updateUI();
-            showNotification('🗑️ Всё расписание очищено');
+            showToast('🗑️ Всё расписание очищено');
         }
 
+        // ===== СКАЧИВАНИЕ =====
         function downloadSchedule() {
             if (Object.keys(scheduleData).length === 0) { alert('Расписание пустое!'); return; }
             const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
@@ -790,38 +1221,38 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showNotification('💾 Файл schedule.json скачан!');
+            showToast('💾 Файл schedule.json скачан!');
         }
 
+        // ===== ОЧИСТКА ФОРМЫ =====
         function clearForm() {
             document.getElementById('pairSubgroup').value = '';
             document.getElementById('pairSubject').value = '';
             document.getElementById('pairTeacher').value = '';
             document.getElementById('pairRoom').value = '';
             document.getElementById('pairBuilding').value = '';
+            document.getElementById('isChanged').checked = false;
             if (editingIndex >= 0) cancelEdit();
         }
 
-        function showNotification(text) {
-            const old = document.querySelector('.notification-toast');
+        // ===== УВЕДОМЛЕНИЯ =====
+        function showToast(text, type = '') {
+            const old = document.querySelector('.toast');
             if (old) old.remove();
             const div = document.createElement('div');
-            div.className = 'notification-toast';
+            div.className = `toast ${type}`;
             div.textContent = text;
             document.body.appendChild(div);
             setTimeout(() => {
                 div.style.opacity = '0';
                 div.style.transition = 'opacity 0.5s';
                 setTimeout(() => div.remove(), 500);
-            }, 2500);
+            }, 3000);
         }
 
         function setDefaultDate() {
             const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            document.getElementById('pairDate').value = `${year}-${month}-${day}`;
+            document.getElementById('pairDate').value = today.toISOString().split('T')[0];
         }
 
         setDefaultDate();

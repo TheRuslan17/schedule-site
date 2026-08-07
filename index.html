@@ -2,38 +2,64 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание И-24-1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>📅 Расписание И-24-1</title>
+    <meta name="description" content="Актуальное расписание занятий для группы И-24-1">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Скрытая ссылка на админку (только для вас) */
-        .admin-link {
-            display: none !important;
-        }
-    </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📅 Расписание занятий</h1>
-            <p id="groupInfo">Группа: <strong>И-24-1</strong> · 3 курс · 1 семестр</p>
+        <!-- ===== ШАПКА ===== -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <span class="header-icon">📅</span>
+                    <div>
+                        <h1>Расписание занятий</h1>
+                        <p class="subtitle">Группа <strong>И-24-1</strong> · 3 курс · 1 семестр</p>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <nav class="controls">
-            <button onclick="loadToday()">📅 Сегодня</button>
-            <button onclick="loadTomorrow()">📅 Завтра</button>
-            <button onclick="loadWeek()">📋 Вся неделя</button>
-            <input type="date" id="datePicker" onchange="loadDate(this.value)">
+        <!-- ===== УПРАВЛЕНИЕ ===== -->
+        <nav class="controls" role="navigation" aria-label="Управление расписанием">
+            <button class="btn btn-primary" onclick="loadToday()" aria-label="Показать сегодня">
+                📅 Сегодня
+            </button>
+            <button class="btn btn-outline" onclick="loadTomorrow()" aria-label="Показать завтра">
+                📅 Завтра
+            </button>
+            <button class="btn btn-outline" onclick="loadWeek()" aria-label="Показать всю неделю">
+                📋 Неделя
+            </button>
+            <div class="date-picker-wrapper">
+                <label for="datePicker" class="visually-hidden">Выберите дату</label>
+                <input type="date" id="datePicker" onchange="loadDate(this.value)" aria-label="Выберите дату">
+            </div>
         </nav>
 
-        <div id="scheduleContainer">
-            <div class="loader">⏳ Загрузка расписания...</div>
+        <!-- ===== ИНФОРМАЦИЯ ===== -->
+        <div class="info-bar" id="infoBar">
+            <span id="currentView">📅 Сегодня</span>
+            <span id="pairsCount">Всего пар: 0</span>
         </div>
 
-        <footer>
-            <span style="color: #999; font-size: 13px;">© Расписание И-24-1</span>
-            <!-- Скрытая ссылка на админку (знаете только вы) -->
-            <a href="login.html" class="admin-link">⚙️</a>
+        <!-- ===== РАСПИСАНИЕ ===== -->
+        <div id="scheduleContainer" role="main" aria-live="polite">
+            <div class="loader">
+                <div class="loader-spinner"></div>
+                <p>⏳ Загрузка расписания...</p>
+            </div>
+        </div>
+
+        <!-- ===== ПОДВАЛ ===== -->
+        <footer class="footer">
+            <span>© 2026 · Расписание И-24-1</span>
+            <span class="footer-separator">|</span>
+            <span class="update-time" id="updateTime">Обновлено: —</span>
+            <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
         </footer>
     </div>
 

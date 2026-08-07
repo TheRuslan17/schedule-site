@@ -3,24 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в админ-панель</title>
+    <title>🔒 Вход в админ-панель</title>
     <style>
-        /* ===== ЗАЩИТА ОТ ИНСПЕКТОРА ===== */
         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
-        
-        /* ===== СТИЛИ ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: #0d1117;
             display: flex;
             justify-content: center;
@@ -28,6 +24,7 @@
             min-height: 100vh;
             padding: 20px;
         }
+
         .login-box {
             background: #161b22;
             padding: 40px;
@@ -37,21 +34,37 @@
             width: 100%;
             text-align: center;
             border: 1px solid #30363d;
+            animation: fadeIn 0.3s ease;
         }
-        .login-box .lock-icon {
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .lock-icon {
             font-size: 48px;
             margin-bottom: 12px;
         }
+
         .login-box h1 {
             font-size: 22px;
             color: #f0f6fc;
             margin-bottom: 6px;
         }
+
         .login-box p {
             color: #8b949e;
             margin-bottom: 24px;
             font-size: 14px;
         }
+
         .login-box input {
             width: 100%;
             padding: 12px 16px;
@@ -63,11 +76,13 @@
             margin-bottom: 12px;
             transition: border 0.2s;
         }
+
         .login-box input:focus {
             border-color: #4a6cf7;
             outline: none;
             box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
         }
+
         .login-box .btn {
             width: 100%;
             padding: 12px;
@@ -80,14 +95,17 @@
             cursor: pointer;
             transition: 0.25s;
         }
+
         .login-box .btn:hover {
             background: #3a56d4;
             transform: scale(0.98);
         }
+
         .login-box .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+
         .login-box .error {
             color: #f85149;
             font-size: 14px;
@@ -98,22 +116,40 @@
             border-radius: 6px;
             border: 1px solid #f8514933;
         }
+
         .login-box .attempts {
             color: #8b949e;
             font-size: 12px;
             margin-top: 12px;
         }
+
         .login-box .hint {
             font-size: 12px;
             color: #484f58;
             margin-top: 16px;
         }
+
         .login-box .hint a {
             color: #4a6cf7;
             text-decoration: none;
         }
+
         .login-box .hint a:hover {
             text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 28px 20px;
+            }
+
+            .login-box h1 {
+                font-size: 20px;
+            }
+
+            .lock-icon {
+                font-size: 40px;
+            }
         }
     </style>
 </head>
@@ -122,11 +158,11 @@
         <div class="lock-icon">🔒</div>
         <h1>Доступ к админ-панели</h1>
         <p>Введите пароль для управления расписанием</p>
-        
-        <input type="password" id="passwordInput" placeholder="Введите пароль" 
+
+        <input type="password" id="passwordInput" placeholder="Введите пароль"
                onkeydown="if(event.key==='Enter') checkPassword()" autofocus>
         <button class="btn" id="loginBtn" onclick="checkPassword()">Войти</button>
-        
+
         <div class="error" id="errorMsg">❌ Неверный пароль</div>
         <div class="attempts" id="attemptsMsg">Осталось попыток: 3</div>
         <div class="hint">
@@ -135,18 +171,15 @@
     </div>
 
     <script>
-        // =============================================
-        // ===== МАКСИМАЛЬНАЯ ЗАЩИТА =====
-        // =============================================
-
-        // ===== 1. ПАРОЛЬ (ИЗМЕНИТЕ НА СВОЙ) =====
+        // ============================================
+        // ЗАЩИТА
+        // ============================================
         const ADMIN_PASSWORD = "12313456";
 
-        // ===== 2. ЗАЩИТА ОТ БРУТФОРСА =====
         let attempts = 3;
         let blocked = false;
 
-        // ===== 3. ПРОВЕРКА СЕССИИ =====
+        // Проверка сессии
         function checkSession() {
             const token = sessionStorage.getItem('admin_token');
             if (token === btoa(ADMIN_PASSWORD + '_secure')) {
@@ -156,37 +189,31 @@
             return false;
         }
 
-        // ===== 4. ОСНОВНАЯ ФУНКЦИЯ =====
+        // Основная функция
         function checkPassword() {
             const input = document.getElementById('passwordInput');
             const error = document.getElementById('errorMsg');
             const attemptsMsg = document.getElementById('attemptsMsg');
             const btn = document.getElementById('loginBtn');
 
-            // Если заблокирован
             if (blocked) {
                 error.textContent = '⛔ Доступ заблокирован на 5 минут';
                 error.style.display = 'block';
                 return;
             }
 
-            // Проверка пароля
             if (input.value === ADMIN_PASSWORD) {
-                // Успех!
                 sessionStorage.setItem('admin_token', btoa(ADMIN_PASSWORD + '_secure'));
-                // Скрытый редирект
                 window.location.replace('admin-panel.html');
                 return;
             }
 
-            // Неверный пароль
             attempts--;
             attemptsMsg.textContent = `Осталось попыток: ${attempts}`;
             error.style.display = 'block';
             input.value = '';
             input.focus();
 
-            // Блокировка после 3 ошибок
             if (attempts <= 0) {
                 blocked = true;
                 btn.disabled = true;
@@ -200,47 +227,39 @@
                     btn.disabled = false;
                     attemptsMsg.textContent = 'Осталось попыток: 3';
                     error.style.display = 'none';
-                }, 300000); // 5 минут
+                }, 300000);
                 return;
             }
 
-            // Скрываем ошибку через 2 секунды
             setTimeout(() => {
                 error.style.display = 'none';
             }, 2000);
         }
 
-        // ===== 5. ЗАЩИТА ОТ ИНСПЕКТОРА =====
+        // Защита от инспектора
         document.addEventListener('keydown', function(e) {
-            // F12
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+S
-            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || 
-                e.key === 's' || e.key === 'S' ||
-                (e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')))) {
+            if (e.key === 'F12') { e.preventDefault();
+                return false; }
+            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' ||
+                    e.key === 's' || e.key === 'S' ||
+                    (e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')))) {
                 e.preventDefault();
                 return false;
             }
         });
 
-        // Контекстное меню (правая кнопка)
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             return false;
         });
 
-        // Защита от выделения текста
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
             return false;
         });
 
-        // ===== 6. ЗАПУСК =====
+        // Запуск
         if (!checkSession()) {
-            // Показываем форму входа
             document.getElementById('loginBox').style.display = 'block';
         }
     </script>
