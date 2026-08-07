@@ -38,7 +38,6 @@ header #groupInfo {
     margin-top: 4px;
 }
 
-/* Кнопки */
 .controls {
     display: flex;
     flex-wrap: wrap;
@@ -74,7 +73,6 @@ header #groupInfo {
     cursor: pointer;
 }
 
-/* Расписание */
 #scheduleContainer {
     min-height: 220px;
 }
@@ -152,6 +150,10 @@ footer {
     padding-top: 18px;
     border-top: 1px solid #e9ecf0;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 footer a {
@@ -165,28 +167,23 @@ footer a:hover {
     text-decoration: underline;
 }
 
-/* Адаптив */
 @media (max-width: 600px) {
     .container {
         padding: 16px;
     }
-
     .controls {
         flex-direction: column;
     }
-
     .controls button,
     .controls input {
         width: 100%;
         text-align: center;
     }
-
     .pair {
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
     }
-
     .pair-time {
         min-width: auto;
     }

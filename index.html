@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание колледжа</title>
+    <title>Расписание И-24-1</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Скрытая ссылка на админку (только для вас) */
+        .admin-link {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>📅 Расписание занятий</h1>
-            <p id="groupInfo">Группа: <strong>И-24-1</strong></p>
+            <p id="groupInfo">Группа: <strong>И-24-1</strong> · 3 курс · 1 семестр</p>
         </header>
-
-        <footer>
-    <a href="upload.html">📤 Загрузить из Excel</a>
-    <span style="margin: 0 10px; color: #ddd;">|</span>
-    <a href="admin.html">⚙️ Админ-панель</a>
-        </footer>
 
         <nav class="controls">
             <button onclick="loadToday()">📅 Сегодня</button>
@@ -31,7 +31,9 @@
         </div>
 
         <footer>
-            <a href="upload.html">⚙️ Загрузить новое расписание (админ)</a>
+            <span style="color: #999; font-size: 13px;">© Расписание И-24-1</span>
+            <!-- Скрытая ссылка на админку (знаете только вы) -->
+            <a href="login.html" class="admin-link">⚙️</a>
         </footer>
     </div>
 
