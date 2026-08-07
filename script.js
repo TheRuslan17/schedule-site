@@ -15,6 +15,7 @@ const WEEKDAYS = ['воскресенье', 'понедельник', 'втор�
 
 let scheduleData = {};
 let currentView = 'today';
+let currentWeekOffset = 0; // 0 = текущая, 1 = следующая
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -39,13 +40,15 @@ const getTomorrow = () => {
     return date;
 };
 
-// Получение дат текущей недели (только ПН-ПТ)
-const getCurrentWeekDates = () => {
+// Получение дат недели с учётом смещения (только ПН-ПТ)
+const getWeekDates = (offset = 0) => {
     const today = new Date();
     const day = today.getDay();
-    // Если сегодня воскресенье (0) — отступаем на 6 дней до понедельника
+    // Находим понедельник текущей недели
     const monday = new Date(today);
     monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    // Применяем смещение (в неделях)
+    monday.setDate(monday.getDate() + offset * 7);
     
     const dates = [];
     for (let i = 0; i < 5; i++) {
@@ -54,6 +57,20 @@ const getCurrentWeekDates = () => {
         dates.push(formatDate(date));
     }
     return dates;
+};
+
+// Форматирование диапазона недели для отображения
+const getWeekRange = (offset = 0) => {
+    const dates = getWeekDates(offset);
+    if (dates.length === 0) return 'Неделя';
+    const parts1 = dates[0].split('.');
+    const parts2 = dates[dates.length - 1].split('.');
+    return `${parts1[2]}.${parts1[1]}.${parts1[0]} — ${parts2[2]}.${parts2[1]}.${parts2[0]}`;
+};
+
+// Проверка, является ли дата сегодняшней
+const isToday = (dateStr) => {
+    return dateStr === formatDate(new Date());
 };
 
 // ============================================
@@ -189,30 +206,52 @@ const loadToday = async () => {
     const today = new Date();
     const dateStr = formatDate(today);
     currentView = 'today';
+    currentWeekOffset = 0;
     await showScheduleByDate(dateStr, '📅 Сегодня');
 };
 
 const loadTomorrow = async () => {
     const dateStr = formatDate(getTomorrow());
     currentView = 'tomorrow';
+    currentWeekOffset = 0;
     await showScheduleByDate(dateStr, '📅 Завтра');
 };
 
-const loadWeek = async () => {
+const loadWeek = async (offset = 0) => {
+    // Ограничение: только 0 (текущая) и 1 (следующая)
+    if (offset < 0 || offset > 1) {
+        offset = 0;
+    }
+    
     const loaded = await loadSchedule();
     if (!loaded) return;
 
+    currentWeekOffset = offset;
     const container = document.getElementById('scheduleContainer');
-    const weekDates = getCurrentWeekDates();
+    const weekDates = getWeekDates(offset);
     const todayStr = formatDate(new Date());
+    const weekRange = getWeekRange(offset);
 
     let html = '';
     let foundAny = false;
     let totalPairs = 0;
 
+    // Заголовок недели с навигацией
+    let weekLabel = 'Текущая неделя';
+    if (offset === 1) weekLabel = 'Следующая неделя ➡️';
+
+    html += `
+        <div class="week-navigation">
+            ${offset === 1 ? `<button class="btn btn-outline btn-sm" onclick="loadWeek(0)">⬅️ Текущая неделя</button>` : ''}
+            ${offset === 0 ? `<button class="btn btn-primary btn-sm" onclick="loadWeek(1)">Следующая неделя ➡️</button>` : ''}
+            <span class="week-label">📅 ${weekLabel} (${weekRange})</span>
+            ${offset === 1 ? `<button class="btn btn-primary btn-sm" onclick="loadWeek(0)">📌 Сегодня</button>` : ''}
+        </div>
+    `;
+
     for (const dateStr of weekDates) {
         const schedule = scheduleData[dateStr] || [];
-        const isToday = dateStr === todayStr;
+        const isTodayFlag = dateStr === todayStr && offset === 0;
 
         // Пропускаем выходные (суббота и воскресенье)
         const weekday = getWeekday(dateStr);
@@ -225,10 +264,10 @@ const loadWeek = async () => {
             const hasChanges = sorted.some(p => p.changed === true);
 
             html += `
-                <div class="day-schedule ${hasChanges ? 'has-changes' : ''} ${isToday ? 'today-highlight' : ''}">
+                <div class="day-schedule ${hasChanges ? 'has-changes' : ''} ${isTodayFlag ? 'today-highlight' : ''}">
                     <div class="day-title">
-                        ${isToday ? '⭐ ' : '📅 '} ${dateStr}, ${weekday}
-                        ${isToday ? '<span class="today-badge">СЕГОДНЯ</span>' : ''}
+                        ${isTodayFlag ? '⭐ ' : '📅 '} ${dateStr}, ${weekday}
+                        ${isTodayFlag ? '<span class="today-badge">СЕГОДНЯ</span>' : ''}
                         ${hasChanges ? '<span class="change-badge">🔄 Есть изменения</span>' : ''}
                     </div>
             `;
@@ -296,12 +335,12 @@ const loadWeek = async () => {
     }
 
     if (!foundAny) {
-        html = `<div class="no-schedule">📭 Нет расписания на эту неделю</div>`;
+        html += `<div class="no-schedule">📭 Нет расписания на эту неделю</div>`;
     }
 
     container.innerHTML = html;
     currentView = 'week';
-    document.getElementById('currentView').textContent = '📋 Вся неделя';
+    document.getElementById('currentView').textContent = `📋 ${weekLabel}`;
     document.getElementById('pairsCount').textContent = `Всего пар: ${totalPairs}`;
 };
 
@@ -310,6 +349,7 @@ const loadDate = async (dateValue) => {
     const parts = dateValue.split('-');
     const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
     currentView = 'date';
+    currentWeekOffset = 0;
     await showScheduleByDate(dateStr, `📅 ${dateStr}`);
 };
 
