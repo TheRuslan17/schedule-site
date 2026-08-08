@@ -6,17 +6,14 @@
     <title>📅 Расписание И-24-1</title>
     <meta name="description" content="Актуальное расписание занятий для группы И-24-1">
     
-    <!-- ===== ИКОНКИ ДЛЯ РАБОЧЕГО СТОЛА ===== -->
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     
-    <!-- ===== НАСТРОЙКИ ДЛЯ IPHONE (PWA) ===== -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Расписание И-24-1">
     <meta name="theme-color" content="#4a6cf7">
     
-    <!-- ===== ПРЕДЗАГРУЗКА ===== -->
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="script.js" as="script">
     
@@ -24,9 +21,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- ============================================
-             ШАПКА
-             ============================================ -->
+        <!-- ШАПКА -->
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
@@ -42,9 +37,7 @@
             </div>
         </header>
 
-        <!-- ============================================
-             ВКЛАДКИ (РАСПИСАНИЕ / ЗВОНКИ / СЕССИЯ)
-             ============================================ -->
+        <!-- ВКЛАДКИ (РАСПИСАНИЕ / ЗВОНКИ) -->
         <nav class="tabs" role="tablist">
             <button class="tab active" data-tab="schedule" onclick="switchTab('schedule')">
                 📅 Расписание
@@ -52,16 +45,11 @@
             <button class="tab" data-tab="calls" onclick="switchTab('calls')">
                 🔔 Звонки
             </button>
-            <button class="tab" data-tab="session" onclick="switchTab('session')">
-                📝 Сессия
-            </button>
         </nav>
 
-        <!-- ============================================
-             ВКЛАДКА 1: РАСПИСАНИЕ
-             ============================================ -->
+        <!-- ВКЛАДКА 1: РАСПИСАНИЕ -->
         <div id="tab-schedule" class="tab-content active">
-            <nav class="controls" role="navigation" aria-label="Управление расписанием">
+            <nav class="controls" role="navigation">
                 <button class="btn btn-primary" onclick="loadToday()">📅 Сегодня</button>
                 <button class="btn btn-outline" onclick="loadTomorrow()">📅 Завтра</button>
                 <button class="btn btn-outline" onclick="loadWeek(0)">📋 Неделя</button>
@@ -84,9 +72,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ
-             ============================================ -->
+        <!-- ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ -->
         <div id="tab-calls" class="tab-content">
             <h2 class="tab-title">🔔 Расписание звонков</h2>
             <div id="callsContainer">
@@ -94,24 +80,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ВКЛАДКА 3: РАСПИСАНИЕ СЕССИИ
-             ============================================ -->
-        <div id="tab-session" class="tab-content">
-            <h2 class="tab-title">📝 Расписание сессии</h2>
-            <div class="session-info">
-                <div class="session-countdown" id="sessionCountdown">
-                    ⏳ До сессии осталось: <strong id="daysUntilSession">—</strong>
-                </div>
-            </div>
-            <div id="sessionContainer">
-                <div class="loader"><div class="loader-spinner"></div><p>⏳ Загрузка...</p></div>
-            </div>
-        </div>
-
-        <!-- ============================================
-             ПОДВАЛ
-             ============================================ -->
+        <!-- ПОДВАЛ -->
         <footer class="footer">
             <span>© 2026 · Расписание И-24-1</span>
             <span class="footer-separator">|</span>
@@ -120,7 +89,7 @@
         </footer>
     </div>
 
-    <!-- ===== КНОПКА "НАВЕРХ" ===== -->
+    <!-- КНОПКА "НАВЕРХ" -->
     <button id="backToTop" class="back-to-top" onclick="scrollToTop()" aria-label="Наверх">↑</button>
 
     <script src="script.js"></script>
