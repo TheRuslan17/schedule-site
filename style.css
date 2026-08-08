@@ -19,7 +19,7 @@
     --border: #d0d7de;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     --radius: 14px;
-    --transition: 0.25s ease;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --warning: #f59f00;
     --warning-bg: #fff3cd;
     --warning-border: #fcc419;
@@ -76,6 +76,11 @@ body {
 .header-icon {
     font-size: 32px;
     line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.header-icon:hover {
+    transform: rotate(-10deg) scale(1.1);
 }
 
 .header h1 {
@@ -118,10 +123,25 @@ body {
     background: var(--white);
     color: var(--text);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.controls .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.controls .btn:active::after {
+    opacity: 0.15;
 }
 
 .controls .btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
 }
 
@@ -187,7 +207,40 @@ body {
 }
 
 /* ============================================
-   РАСПИСАНИЕ
+   ИНДИКАТОР ЗАГРУЗКИ
+   ============================================ */
+.loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    gap: 16px;
+    color: var(--text-muted);
+    animation: fadeIn 0.3s ease;
+}
+
+.loader-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loader.hidden {
+    display: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   РАСПИСАНИЕ (с анимациями)
    ============================================ */
 #scheduleContainer {
     min-height: 180px;
@@ -199,8 +252,16 @@ body {
     padding: 18px 22px;
     margin-bottom: 16px;
     border-left: 5px solid var(--primary);
-    animation: fadeIn 0.3s ease;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
 }
+
+.day-schedule:nth-child(1) { animation-delay: 0.05s; }
+.day-schedule:nth-child(2) { animation-delay: 0.1s; }
+.day-schedule:nth-child(3) { animation-delay: 0.15s; }
+.day-schedule:nth-child(4) { animation-delay: 0.2s; }
+.day-schedule:nth-child(5) { animation-delay: 0.25s; }
 
 .day-schedule.has-changes {
     border-left-color: var(--warning);
@@ -211,6 +272,28 @@ body {
     border-left-color: var(--today-border);
     background: var(--today-bg);
     box-shadow: 0 0 0 2px var(--today-border);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .day-title {
@@ -243,7 +326,7 @@ body {
 }
 
 /* ============================================
-   ГРУППА ПАР (по номеру)
+   ГРУППА ПАР
    ============================================ */
 .pair-group {
     background: white;
@@ -251,7 +334,12 @@ body {
     padding: 12px 16px;
     margin-bottom: 8px;
     border: 1px solid #e9ecf0;
-    transition: 0.2s;
+    transition: var(--transition);
+}
+
+.pair-group:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(74, 108, 247, 0.08);
 }
 
 .pair-group.pair-group-changed {
@@ -290,7 +378,7 @@ body {
 }
 
 /* ============================================
-   ОТДЕЛЬНАЯ ПАРА
+   ОТДЕЛЬНАЯ ПАРА (с кастомными иконками)
    ============================================ */
 .pair-item {
     display: flex;
@@ -299,11 +387,16 @@ body {
     gap: 6px 16px;
     padding: 6px 0;
     border-bottom: 1px solid #f0f2f5;
+    transition: var(--transition);
 }
 
 .pair-item:last-child {
     border-bottom: none;
     padding-bottom: 0;
+}
+
+.pair-item:hover {
+    padding-left: 4px;
 }
 
 .pair-item.pair-changed {
@@ -328,6 +421,15 @@ body {
     font-size: 14px;
     flex: 1;
     min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ===== КАСТОМНЫЕ ИКОНКИ ДЛЯ ПРЕДМЕТОВ ===== */
+.pair-subject .subject-icon {
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
 .pair-meta {
@@ -369,13 +471,14 @@ body {
 }
 
 /* ============================================
-   ПУСТЫЕ СОСТОЯНИЯ И ЛОАДЕР
+   ПУСТЫЕ СОСТОЯНИЯ
    ============================================ */
 .no-schedule {
     text-align: center;
     color: var(--text-muted);
     padding: 50px 20px;
     font-size: 16px;
+    animation: fadeIn 0.3s ease;
 }
 
 .no-schedule small {
@@ -384,40 +487,110 @@ body {
     font-size: 14px;
 }
 
-.loader {
+/* ============================================
+   НАВИГАЦИЯ ПО НЕДЕЛЯМ
+   ============================================ */
+.week-navigation {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 50px 20px;
-    gap: 16px;
-    color: var(--text-muted);
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: var(--primary-light);
+    border-radius: 10px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
 }
 
-.loader-spinner {
-    width: 36px;
-    height: 36px;
-    border: 4px solid var(--border);
-    border-top-color: var(--primary);
+.week-navigation .week-label {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    padding: 0 8px;
+    min-width: 200px;
+    text-align: center;
+}
+
+.week-navigation .btn-sm {
+    padding: 6px 18px;
+    font-size: 13px;
+    border-radius: 30px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+}
+
+.week-navigation .btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
+}
+
+.week-navigation .btn-primary.btn-sm {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.week-navigation .btn-primary.btn-sm:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.week-navigation .btn-outline.btn-sm {
+    background: transparent;
+    border-color: var(--border);
+}
+
+.week-navigation .btn-outline.btn-sm:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ============================================
+   КНОПКА "НАВЕРХ"
+   ============================================ */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 52px;
+    height: 52px;
+    background: var(--primary);
+    color: white;
+    border: none;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(74, 108, 247, 0.35);
+    transition: var(--transition);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.back-to-top:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 24px rgba(74, 108, 247, 0.45);
+}
+
+.back-to-top:active {
+    transform: scale(0.9);
 }
 
 /* ============================================
@@ -517,6 +690,29 @@ body {
     .pair-group-header .pair-number {
         font-size: 14px;
     }
+    .week-navigation {
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px;
+    }
+    .week-navigation .week-label {
+        font-size: 13px;
+        min-width: auto;
+        order: -1;
+    }
+    .week-navigation .btn-sm {
+        padding: 6px 16px;
+        font-size: 13px;
+        width: 100%;
+        text-align: center;
+    }
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 46px;
+        height: 46px;
+        font-size: 20px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -602,6 +798,13 @@ body {
     .pair-group-header .pair-time {
         font-size: 12px;
     }
+    .back-to-top {
+        bottom: 16px;
+        right: 16px;
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -683,6 +886,10 @@ input:focus-visible {
     .pair-group {
         background: #0d1117;
         border-color: #21262d;
+    }
+
+    .pair-group:hover {
+        border-color: var(--primary);
     }
 
     .pair-group.pair-group-changed {
@@ -783,111 +990,32 @@ input:focus-visible {
         color: #1a1a2e;
     }
 
-/* ============================================
-   НАВИГАЦИЯ ПО НЕДЕЛЯМ
-   ============================================ */
-.week-navigation {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 12px 20px;
-    background: var(--primary-light);
-    border-radius: 10px;
-    margin-bottom: 18px;
-    border: 1px solid var(--border);
-}
-
-.week-navigation .week-label {
-    font-weight: 600;
-    font-size: 15px;
-    color: var(--text);
-    padding: 0 8px;
-    min-width: 200px;
-    text-align: center;
-}
-
-.week-navigation .btn-sm {
-    padding: 6px 18px;
-    font-size: 13px;
-    border-radius: 30px;
-    border: 2px solid var(--border);
-    background: var(--white);
-    color: var(--text);
-    cursor: pointer;
-    transition: var(--transition);
-    font-weight: 600;
-}
-
-.week-navigation .btn-sm:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
-}
-
-.week-navigation .btn-primary.btn-sm {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.week-navigation .btn-primary.btn-sm:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
-}
-
-.week-navigation .btn-outline.btn-sm {
-    background: transparent;
-    border-color: var(--border);
-}
-
-.week-navigation .btn-outline.btn-sm:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-/* ============================================
-   АДАПТИВ ДЛЯ НАВИГАЦИИ
-   ============================================ */
-@media (max-width: 600px) {
-    .week-navigation {
-        flex-direction: column;
-        gap: 8px;
-        padding: 14px;
-    }
-    
-    .week-navigation .week-label {
-        font-size: 13px;
-        min-width: auto;
-        order: -1;
-    }
-    
-    .week-navigation .btn-sm {
-        padding: 6px 16px;
-        font-size: 13px;
-        width: 100%;
-        text-align: center;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
     .week-navigation {
         background: #1c2333;
         border-color: #30363d;
     }
-    
+
     .week-navigation .week-label {
         color: #f0f6fc;
     }
-    
+
     .week-navigation .btn-sm {
         background: #0d1117;
         color: #f0f6fc;
         border-color: #30363d;
     }
-    
+
     .week-navigation .btn-sm:hover {
         border-color: var(--primary);
         color: var(--primary);
     }
-}}
+
+    .back-to-top {
+        box-shadow: 0 4px 16px rgba(74, 108, 247, 0.25);
+    }
+
+    .loader-spinner {
+        border-color: #30363d;
+        border-top-color: #58a6ff;
+    }
+}

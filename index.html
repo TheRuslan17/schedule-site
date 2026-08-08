@@ -20,6 +20,10 @@
     <meta name="theme-color" content="#4a6cf7">
     <meta name="msapplication-TileColor" content="#4a6cf7">
     
+    <!-- ===== ПРЕДЗАГРУЗКА ===== -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    
     <!-- ===== СТИЛИ ===== -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -71,7 +75,8 @@
              РАСПИСАНИЕ
              ============================================ -->
         <div id="scheduleContainer" role="main" aria-live="polite">
-            <div class="loader">
+            <!-- Индикатор загрузки -->
+            <div class="loader" id="loader">
                 <div class="loader-spinner"></div>
                 <p>⏳ Загрузка расписания...</p>
             </div>
@@ -87,6 +92,11 @@
             <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
         </footer>
     </div>
+
+    <!-- ===== КНОПКА "НАВЕРХ" ===== -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()" aria-label="Наверх">
+        ↑
+    </button>
 
     <!-- ===== СКРИПТЫ ===== -->
     <script src="script.js"></script>

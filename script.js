@@ -13,9 +13,40 @@ const PAIR_TIMES = {
 };
 const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
 
+// ===== КАСТОМНЫЕ ИКОНКИ ДЛЯ ПРЕДМЕТОВ =====
+const SUBJECT_ICONS = {
+    'Технология разработки программного обеспечения': '💻',
+    'Инструментальные средства разработки программного обеспечения': '🛠️',
+    'Инструментальные средства разработки ПО': '🛠️',
+    'Математическое моделирование': '📐',
+    'Основы финансовой грамотности': '💰',
+    'Физическая культура': '🏃',
+    'Иностранный язык в профессиональной деятельности': '🌍',
+    'Иностранный язык': '🌍',
+    'Разработка мобильных приложений': '📱',
+    'Математика': '📐',
+    'Физика': '⚡',
+    'Химия': '🧪',
+    'История': '📜',
+    'Информатика': '💻',
+    'Русский язык': '📖',
+    'Литература': '📚',
+    'Безопасность жизнедеятельности': '🛡️',
+    'Основы безопасности и защиты Родины': '🛡️',
+    'Классный час': '🗣️',
+    'Разговоры о важном': '💬',
+    'Идеология и практика противодействия современному экстремизму и терроризму': '⚖️',
+    'Технология разработки и защиты баз данных': '🗄️',
+    'Основы алгоритмизации и программирования': '💻',
+    'Стандартизация, сертификация и техническое документоведение': '📋',
+    'Основы философии': '🧠',
+    'Элементы высшей математики': '📐',
+    'Теория вероятностей и математическая статистика': '📊'
+};
+
 let scheduleData = {};
 let currentView = 'today';
-let currentWeekOffset = 0; // 0 = текущая, 1 = следующая
+let currentWeekOffset = 0;
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -40,14 +71,22 @@ const getTomorrow = () => {
     return date;
 };
 
-// Получение дат недели с учётом смещения (только ПН-ПТ)
+const getSubjectIcon = (subject) => {
+    if (!subject) return '📘';
+    // Точное совпадение
+    if (SUBJECT_ICONS[subject]) return SUBJECT_ICONS[subject];
+    // Частичное совпадение
+    for (const [key, icon] of Object.entries(SUBJECT_ICONS)) {
+        if (subject.includes(key)) return icon;
+    }
+    return '📘';
+};
+
 const getWeekDates = (offset = 0) => {
     const today = new Date();
     const day = today.getDay();
-    // Находим понедельник текущей недели
     const monday = new Date(today);
     monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-    // Применяем смещение (в неделях)
     monday.setDate(monday.getDate() + offset * 7);
     
     const dates = [];
@@ -59,7 +98,6 @@ const getWeekDates = (offset = 0) => {
     return dates;
 };
 
-// Форматирование диапазона недели для отображения
 const getWeekRange = (offset = 0) => {
     const dates = getWeekDates(offset);
     if (dates.length === 0) return 'Неделя';
@@ -68,16 +106,49 @@ const getWeekRange = (offset = 0) => {
     return `${parts1[2]}.${parts1[1]}.${parts1[0]} — ${parts2[2]}.${parts2[1]}.${parts2[0]}`;
 };
 
-// Проверка, является ли дата сегодняшней
-const isToday = (dateStr) => {
-    return dateStr === formatDate(new Date());
+// ============================================
+// ИНДИКАТОР ЗАГРУЗКИ
+// ============================================
+const showLoader = () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.classList.remove('hidden');
+    }
 };
+
+const hideLoader = () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.classList.add('hidden');
+    }
+};
+
+// ============================================
+// КНОПКА "НАВЕРХ"
+// ============================================
+const handleBackToTop = () => {
+    const btn = document.getElementById('backToTop');
+    if (!btn) return;
+    if (window.scrollY > 300) {
+        btn.classList.add('visible');
+    } else {
+        btn.classList.remove('visible');
+    }
+};
+
+const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.addEventListener('scroll', handleBackToTop);
 
 // ============================================
 // ЗАГРУЗКА ДАННЫХ
 // ============================================
 const loadSchedule = async () => {
     const container = document.getElementById('scheduleContainer');
+    showLoader();
+    
     try {
         const response = await fetch(`${SCHEDULE_URL}?t=${Date.now()}`);
         if (!response.ok) throw new Error('Файл не найден');
@@ -87,8 +158,10 @@ const loadSchedule = async () => {
         document.getElementById('updateTime').textContent =
             `Обновлено: ${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
 
+        hideLoader();
         return true;
     } catch (e) {
+        hideLoader();
         container.innerHTML = `
             <div class="no-schedule">
                 📭 Расписание ещё не загружено
@@ -152,11 +225,15 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
 
         if (hasMultipleSubgroups) {
             pairs.forEach((pair, index) => {
+                const icon = getSubjectIcon(pair.subject);
                 const subgroupLabel = pair.subgroup ? `Подгруппа ${pair.subgroup}` : `Вариант ${index + 1}`;
                 html += `
                     <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
                         <span class="pair-subgroup">👥 ${subgroupLabel}</span>
-                        <span class="pair-subject">${pair.subject}</span>
+                        <span class="pair-subject">
+                            <span class="subject-icon">${icon}</span>
+                            ${pair.subject}
+                        </span>
                         <span class="pair-meta">
                             ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                             ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
@@ -168,9 +245,13 @@ const renderSchedule = (dateStr, schedule, viewName = '') => {
             });
         } else {
             const pair = pairs[0];
+            const icon = getSubjectIcon(pair.subject);
             html += `
                 <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
-                    <span class="pair-subject">${pair.subject}</span>
+                    <span class="pair-subject">
+                        <span class="subject-icon">${icon}</span>
+                        ${pair.subject}
+                    </span>
                     <span class="pair-meta">
                         ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                         ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
@@ -218,7 +299,6 @@ const loadTomorrow = async () => {
 };
 
 const loadWeek = async (offset = 0) => {
-    // Ограничение: только 0 (текущая) и 1 (следующая)
     if (offset < 0 || offset > 1) {
         offset = 0;
     }
@@ -236,7 +316,6 @@ const loadWeek = async (offset = 0) => {
     let foundAny = false;
     let totalPairs = 0;
 
-    // Заголовок недели с навигацией
     let weekLabel = 'Текущая неделя';
     if (offset === 1) weekLabel = 'Следующая неделя ➡️';
 
@@ -253,7 +332,6 @@ const loadWeek = async (offset = 0) => {
         const schedule = scheduleData[dateStr] || [];
         const isTodayFlag = dateStr === todayStr && offset === 0;
 
-        // Пропускаем выходные (суббота и воскресенье)
         const weekday = getWeekday(dateStr);
         if (weekday === 'суббота' || weekday === 'воскресенье') continue;
 
@@ -298,11 +376,15 @@ const loadWeek = async (offset = 0) => {
 
                 if (hasMultipleSubgroups) {
                     pairs.forEach((pair, index) => {
+                        const icon = getSubjectIcon(pair.subject);
                         const subgroupLabel = pair.subgroup ? `Подгруппа ${pair.subgroup}` : `Вариант ${index + 1}`;
                         html += `
                             <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
                                 <span class="pair-subgroup">👥 ${subgroupLabel}</span>
-                                <span class="pair-subject">${pair.subject}</span>
+                                <span class="pair-subject">
+                                    <span class="subject-icon">${icon}</span>
+                                    ${pair.subject}
+                                </span>
                                 <span class="pair-meta">
                                     ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                                     ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
@@ -314,9 +396,13 @@ const loadWeek = async (offset = 0) => {
                     });
                 } else {
                     const pair = pairs[0];
+                    const icon = getSubjectIcon(pair.subject);
                     html += `
                         <div class="pair-item ${pair.changed ? 'pair-changed' : ''}">
-                            <span class="pair-subject">${pair.subject}</span>
+                            <span class="pair-subject">
+                                <span class="subject-icon">${icon}</span>
+                                ${pair.subject}
+                            </span>
                             <span class="pair-meta">
                                 ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                                 ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
