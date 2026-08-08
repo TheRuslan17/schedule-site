@@ -9,22 +9,17 @@
     <!-- ===== ИКОНКИ ДЛЯ РАБОЧЕГО СТОЛА ===== -->
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
-    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     
     <!-- ===== НАСТРОЙКИ ДЛЯ IPHONE (PWA) ===== -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Расписание И-24-1">
-    
-    <!-- ===== ЦВЕТ ФОНА ДЛЯ ИКОНКИ ===== -->
     <meta name="theme-color" content="#4a6cf7">
-    <meta name="msapplication-TileColor" content="#4a6cf7">
     
     <!-- ===== ПРЕДЗАГРУЗКА ===== -->
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="script.js" as="script">
     
-    <!-- ===== СТИЛИ ===== -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,44 +36,76 @@
                         <p class="subtitle">Группа <strong>И-24-1</strong> · 3 курс · 1 семестр</p>
                     </div>
                 </div>
+                <div class="header-right">
+                    <span class="role-badge" id="roleBadge">👤 Студент</span>
+                </div>
             </div>
         </header>
 
         <!-- ============================================
-             УПРАВЛЕНИЕ
+             ВКЛАДКИ (РАСПИСАНИЕ / ЗВОНКИ / СЕССИЯ)
              ============================================ -->
-        <nav class="controls" role="navigation" aria-label="Управление расписанием">
-            <button class="btn btn-primary" onclick="loadToday()" aria-label="Показать сегодня">
-                📅 Сегодня
+        <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="schedule" onclick="switchTab('schedule')">
+                📅 Расписание
             </button>
-            <button class="btn btn-outline" onclick="loadTomorrow()" aria-label="Показать завтра">
-                📅 Завтра
+            <button class="tab" data-tab="calls" onclick="switchTab('calls')">
+                🔔 Звонки
             </button>
-            <button class="btn btn-outline" onclick="loadWeek(0)" aria-label="Показать текущую неделю">
-                📋 Неделя
+            <button class="tab" data-tab="session" onclick="switchTab('session')">
+                📝 Сессия
             </button>
-            <div class="date-picker-wrapper">
-                <label for="datePicker" class="visually-hidden">Выберите дату</label>
-                <input type="date" id="datePicker" onchange="loadDate(this.value)" aria-label="Выберите дату">
-            </div>
         </nav>
 
         <!-- ============================================
-             ИНФОРМАЦИОННАЯ ПОЛОСА
+             ВКЛАДКА 1: РАСПИСАНИЕ
              ============================================ -->
-        <div class="info-bar" id="infoBar">
-            <span id="currentView">📅 Сегодня</span>
-            <span id="pairsCount">Всего пар: 0</span>
+        <div id="tab-schedule" class="tab-content active">
+            <nav class="controls" role="navigation" aria-label="Управление расписанием">
+                <button class="btn btn-primary" onclick="loadToday()">📅 Сегодня</button>
+                <button class="btn btn-outline" onclick="loadTomorrow()">📅 Завтра</button>
+                <button class="btn btn-outline" onclick="loadWeek(0)">📋 Неделя</button>
+                <div class="date-picker-wrapper">
+                    <label for="datePicker" class="visually-hidden">Выберите дату</label>
+                    <input type="date" id="datePicker" onchange="loadDate(this.value)">
+                </div>
+            </nav>
+
+            <div class="info-bar" id="infoBar">
+                <span id="currentView">📅 Сегодня</span>
+                <span id="pairsCount">Всего пар: 0</span>
+            </div>
+
+            <div id="scheduleContainer" role="main" aria-live="polite">
+                <div class="loader" id="loader">
+                    <div class="loader-spinner"></div>
+                    <p>⏳ Загрузка расписания...</p>
+                </div>
+            </div>
         </div>
 
         <!-- ============================================
-             РАСПИСАНИЕ
+             ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ
              ============================================ -->
-        <div id="scheduleContainer" role="main" aria-live="polite">
-            <!-- Индикатор загрузки -->
-            <div class="loader" id="loader">
-                <div class="loader-spinner"></div>
-                <p>⏳ Загрузка расписания...</p>
+        <div id="tab-calls" class="tab-content">
+            <h2 class="tab-title">🔔 Расписание звонков</h2>
+            <div id="callsContainer">
+                <div class="loader"><div class="loader-spinner"></div><p>⏳ Загрузка...</p></div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             ВКЛАДКА 3: РАСПИСАНИЕ СЕССИИ
+             ============================================ -->
+        <div id="tab-session" class="tab-content">
+            <h2 class="tab-title">📝 Расписание сессии</h2>
+            <div class="session-info">
+                <div class="session-countdown" id="sessionCountdown">
+                    ⏳ До сессии осталось: <strong id="daysUntilSession">—</strong>
+                </div>
+            </div>
+            <div id="sessionContainer">
+                <div class="loader"><div class="loader-spinner"></div><p>⏳ Загрузка...</p></div>
             </div>
         </div>
 
@@ -94,11 +121,8 @@
     </div>
 
     <!-- ===== КНОПКА "НАВЕРХ" ===== -->
-    <button id="backToTop" class="back-to-top" onclick="scrollToTop()" aria-label="Наверх">
-        ↑
-    </button>
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()" aria-label="Наверх">↑</button>
 
-    <!-- ===== СКРИПТЫ ===== -->
     <script src="script.js"></script>
 </body>
 </html>
