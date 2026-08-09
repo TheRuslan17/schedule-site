@@ -12,40 +12,92 @@ const PAIR_TIMES = {
     7: '18:30-20:00'
 };
 
-// ===== РАСПИСАНИЕ ЗВОНКОВ (ПРАВИЛЬНЫЕ ПЕРЕМЕНЫ) =====
-const CALLS_SCHEDULE = [
-    { pair: 1, start: '08:00', end: '09:30', break: '20 мин' },
-    { pair: 2, start: '09:50', end: '11:20', break: '30 мин' },
-    { pair: 3, start: '11:50', end: '13:20', break: '10 мин' },
-    { pair: 4, start: '13:30', end: '15:00', break: '10 мин' },
-    { pair: 5, start: '15:10', end: '16:40', break: '10 мин' },
-    { pair: 6, start: '16:50', end: '18:20', break: '10 мин' },
-    { pair: 7, start: '18:30', end: '20:00', break: '—' }
-];
-
-const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-const SUBJECT_ICONS = {
-    'Технология разработки программного обеспечения': '💻',
-    'Инструментальные средства разработки программного обеспечения': '🛠️',
-    'Математическое моделирование': '📐',
-    'Основы финансовой грамотности': '💰',
-    'Физическая культура': '🏃',
-    'Иностранный язык в профессиональной деятельности': '🌍',
-    'Разработка мобильных приложений': '📱',
-    'Технология разработки и защиты баз данных': '🗄️',
-    'Основы алгоритмизации и программирования': '💻',
-    'Стандартизация, сертификация и техническое документоведение': '📋',
-    'Основы философии': '🧠',
-    'Элементы высшей математики': '📐',
-    'Теория вероятностей и математическая статистика': '📊',
-    'Инструментальные средства разработки ПО': '🛠️'
-};
-
-let scheduleData = {};
-let currentView = 'today';
-let currentWeekOffset = 0;
-let currentTab = 'schedule';
-let userRole = 'student';
+// ============================================
+// РАСПИСАНИЕ ЗВОНКОВ (СТИЛЬНАЯ ВЕРСИЯ)
+// ============================================
+function renderCalls() {
+    const container = document.getElementById('callsContainer');
+    
+    // Группируем пары по времени суток
+    const morning = CALLS_SCHEDULE.slice(0, 2);   // 1-2 пара
+    const day = CALLS_SCHEDULE.slice(2, 5);       // 3-5 пара
+    const evening = CALLS_SCHEDULE.slice(5, 7);   // 6-7 пара
+    
+    const timeLabels = [
+        { key: 'morning', label: '🌅 Утро', icon: '☀️', pairs: morning },
+        { key: 'day', label: '☀️ День', icon: '🌤️', pairs: day },
+        { key: 'evening', label: '🌙 Вечер', icon: '🌆', pairs: evening }
+    ];
+    
+    let html = `
+        <div class="calls-container">
+            <div class="calls-header-banner">
+                <span class="banner-icon">⏰</span>
+                <div>
+                    <h3>Режим работы</h3>
+                    <p>Актуальное расписание звонков на 2025/2026 учебный год</p>
+                </div>
+            </div>
+    `;
+    
+    timeLabels.forEach(section => {
+        // Пропускаем пустые секции
+        if (!section.pairs || section.pairs.length === 0) return;
+        
+        html += `
+            <div class="calls-section">
+                <div class="calls-section-header">
+                    <span class="section-icon">${section.icon}</span>
+                    <span class="section-label">${section.label}</span>
+                </div>
+                <div class="calls-grid">
+        `;
+        
+        section.pairs.forEach(call => {
+            const pairEmoji = ['①', '②', '③', '④', '⑤', '⑥', '⑦'][call.pair - 1] || '🔢';
+            html += `
+                <div class="call-card" style="animation-delay: ${(call.pair - 1) * 0.08}s">
+                    <div class="call-card-number">
+                        <span class="pair-emoji">${pairEmoji}</span>
+                        <span class="pair-number">${call.pair}</span>
+                    </div>
+                    <div class="call-card-time">
+                        <div class="time-block">
+                            <span class="time-label">Начало</span>
+                            <span class="time-value">${call.start}</span>
+                        </div>
+                        <div class="time-divider">—</div>
+                        <div class="time-block">
+                            <span class="time-label">Конец</span>
+                            <span class="time-value">${call.end}</span>
+                        </div>
+                    </div>
+                    <div class="call-card-break">
+                        <span class="break-icon">☕</span>
+                        <span class="break-value">${call.break}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    });
+    
+    // Информационная строка
+    html += `
+        <div class="calls-footer-info">
+            <span>🕒 Всего пар: ${CALLS_SCHEDULE.length}</span>
+            <span>⏱️ Общая длительность: 8 ч 30 мин</span>
+            <span>📌 Обновлено: ${new Date().toLocaleDateString('ru-RU')}</span>
+        </div>
+    </div>
+    `;
+    
+    container.innerHTML = html;
+}
 
 // ============================================
 // ПРОВЕРКА РОЛИ
