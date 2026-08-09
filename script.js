@@ -4,7 +4,7 @@
 const SCHEDULE_URL = 'schedule.json';
 
 // ===== ПОГОДА =====
-const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e';
+const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e'; // Получить на openweathermap.org
 const CITY = 'Nevinnomyssk';
 const WEATHER_URL = `https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=ru&cnt=6`;
 
@@ -313,7 +313,7 @@ function renderScheduleByDay(dayName, viewName) {
         .sort((a, b) => parseInt(a) - parseInt(b));
     if (pairKeys.length === 0) {
         container.innerHTML = `<div class="no-schedule">📭 Расписания на ${dayName} нет</div>`;
-document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
+        document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
         return;
     }
     const dateStr = getDateByDayName(dayName);
@@ -342,7 +342,7 @@ document.getElementById('currentView').textContent = viewName || `📅 ${dayName
     });
     html += '</div>';
     container.innerHTML = html;
-document.getElementById('currentView').textContent = '📋 Вся неделя';
+    document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
 }
 
 // ============================================
@@ -474,18 +474,33 @@ async function loadDate(dateValue) {
 }
 
 // ============================================
-// PWA — ОБНОВЛЕНИЕ
+// PWA — ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
 // ============================================
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-        registration.update();
-        setInterval(() => {
-            registration.update();
-            console.log('🔄 Проверка обновлений PWA...');
-        }, 300000);
-    });
+
+// Проверка обновлений при загрузке
+async function checkForUpdates() {
+    if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.update();
+        if (registration.waiting) {
+            registration.waiting.postMessage('skipWaiting');
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+    }
 }
 
+// Проверка каждые 30 секунд
+setInterval(() => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
+        });
+    }
+}, 30000);
+
+// Уведомление об обновлении
 let newWorker;
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
@@ -574,15 +589,6 @@ function manualUpdateCheck() {
     }
 }
 
-async function checkForUpdatesOnStart() {
-    if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration.waiting) {
-            showUpdateNotification();
-        }
-    }
-}
-
 function showToast(text) {
     const existing = document.querySelector('.update-status');
     if (existing) existing.remove();
@@ -624,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchWeather();
     updateDateAndWeek();
     setTimeout(addUpdateButton, 500);
-    setTimeout(checkForUpdatesOnStart, 3000);
+    setTimeout(checkForUpdates, 1000);
     
     const today = new Date();
     const year = today.getFullYear();
