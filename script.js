@@ -4,7 +4,7 @@
 const SCHEDULE_URL = 'schedule.json';
 
 // ===== ПОГОДА =====
-const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e'; // Получить на openweathermap.org
+const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e';
 const CITY = 'Nevinnomyssk';
 const WEATHER_URL = `https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=ru&cnt=6`;
 
@@ -19,12 +19,8 @@ const CALLS_SCHEDULE = [
     { pair: 7, start: '18:30', end: '20:00', break: '—' }
 ];
 
-const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-
 let scheduleData = {};
-let currentView = 'today';
 let currentTab = 'schedule';
-let userRole = 'student';
 let isTransitioning = false;
 let deferredPrompt;
 
@@ -50,6 +46,21 @@ function getCurrentWeekType() {
 }
 
 // ============================================
+// ПОЛУЧЕНИЕ ДАТЫ ПО ДНЮ НЕДЕЛИ
+// ============================================
+function getDateByDayName(dayName) {
+    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const now = new Date();
+    const todayIndex = now.getDay();
+    const targetIndex = days.indexOf(dayName);
+    let diff = targetIndex - todayIndex;
+    if (diff < 0) diff += 7;
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + diff);
+    return formatDate(targetDate);
+}
+
+// ============================================
 // ОТОБРАЖЕНИЕ ДАТЫ И НОМЕРА НЕДЕЛИ
 // ============================================
 function updateDateAndWeek() {
@@ -59,7 +70,6 @@ function updateDateAndWeek() {
     const weekLabel = weekType === 'A' ? 'Неделя А' : 'Неделя Б';
     const days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
     const dayName = days[now.getDay()];
-    
     document.getElementById('currentDate').textContent = `📅 ${dateStr}, ${dayName}`;
     document.getElementById('currentWeek').textContent = `📆 ${weekLabel}`;
 }
@@ -103,18 +113,15 @@ async function fetchWeather() {
         const response = await fetch(WEATHER_URL);
         if (!response.ok) throw new Error('Ошибка загрузки');
         const data = await response.json();
-
         const today = data.list[0];
         const todayEmoji = getWeatherEmoji(today.weather[0].icon);
         const todayTemp = Math.round(today.main.temp);
         const todayDesc = today.weather[0].description;
         const feelsLike = Math.round(today.main.feels_like);
-
         const tomorrow = data.list[4] || data.list[data.list.length - 1];
         const tomorrowEmoji = getWeatherEmoji(tomorrow.weather[0].icon);
         const tomorrowTemp = Math.round(tomorrow.main.temp);
         const tomorrowDesc = tomorrow.weather[0].description;
-
         container.innerHTML = `
             <div class="weather-content">
                 <div class="weather-main">
@@ -156,160 +163,34 @@ function getWeatherEmoji(icon) {
 }
 
 // ============================================
-// PWA — ПОЛНОЕ ОБНОВЛЕНИЕ
+// PWA — УСТАНОВКА ПРИЛОЖЕНИЯ
 // ============================================
-
-// ===== 1. АВТОМАТИЧЕСКАЯ ПРОВЕРКА ОБНОВЛЕНИЙ =====
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-        // Проверяем обновления при каждом запуске
-        registration.update();
-        
-        // Проверяем обновления каждые 5 минут
-        setInterval(() => {
-            registration.update();
-            console.log('🔄 Проверка обновлений PWA...');
-        }, 300000); // 5 минут
-    });
-}
-
-// ===== 2. ОБРАБОТКА НОВОЙ ВЕРСИИ =====
-let newWorker;
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-        registration.addEventListener('updatefound', () => {
-            newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Новая версия установлена, показываем уведомление
-                    showUpdateNotification();
-                }
-            });
-        });
-    });
-}
-
-// ===== 3. УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ =====
-function showUpdateNotification() {
-    // Проверяем, не показывали ли уже
-    if (sessionStorage.getItem('updateShown')) return;
-    sessionStorage.setItem('updateShown', 'true');
-    
-    // Создаём уведомление
-    const notification = document.createElement('div');
-    notification.className = 'update-notification';
-    notification.innerHTML = `
-        <div class="update-content">
-            <span>🔄 Доступна новая версия приложения</span>
-            <button onclick="updateApp()" class="update-btn">Обновить</button>
-            <button onclick="closeUpdateNotification()" class="update-close">✕</button>
-        </div>
-    `;
-    document.body.prepend(notification);
-    
-    // Автоматическое скрытие через 10 секунд
-    setTimeout(() => {
-        if (notification) {
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 500);
-        }
-    }, 10000);
-}
-
-function closeUpdateNotification() {
-    const notification = document.querySelector('.update-notification');
-    if (notification) {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 500);
-    }
-    sessionStorage.removeItem('updateShown');
-}
-
-// ===== 4. РУЧНОЕ ОБНОВЛЕНИЕ =====
-function updateApp() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(registration => {
-            // Отправляем сигнал на обновление
-            registration.waiting.postMessage('skipWaiting');
-            
-            // Показываем сообщение
-            const status = document.createElement('div');
-            status.className = 'update-status';
-            status.textContent = '⏳ Обновление...';
-            document.body.prepend(status);
-            
-            // Перезагружаем после обновления
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        });
-    }
-}
-
-// ===== 5. КНОПКА РУЧНОГО ОБНОВЛЕНИЯ (в подвале) =====
-function addUpdateButton() {
-    const footer = document.querySelector('.footer-main');
-    if (footer) {
-        const updateBtn = document.createElement('button');
-        updateBtn.className = 'update-manual-btn';
-        updateBtn.innerHTML = '🔄 Проверить обновления';
-        updateBtn.onclick = manualUpdateCheck;
-        footer.appendChild(updateBtn);
-    }
-}
-
-function manualUpdateCheck() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(registration => {
-            registration.update();
-            showToast('🔍 Проверка обновлений...');
-            
-            // Проверяем через 2 секунды
-            setTimeout(() => {
-                if (registration.waiting) {
-                    showUpdateNotification();
-                } else {
-                    showToast('✅ У вас актуальная версия');
-                }
-            }, 2000);
-        });
-    }
-}
-
-// ===== 6. УВЕДОМЛЕНИЕ ПРИ ОТКРЫТИИ (если есть новая версия) =====
-async function checkForUpdatesOnStart() {
-    if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration.waiting) {
-            showUpdateNotification();
-        }
-    }
-}
-
-// ===== 7. ВЫЗОВ ПРИ ЗАГРУЗКЕ =====
-document.addEventListener('DOMContentLoaded', () => {
-    // Добавляем кнопку обновления в подвал
-    setTimeout(addUpdateButton, 500);
-    
-    // Проверяем обновления при старте
-    setTimeout(checkForUpdatesOnStart, 3000);
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').style.display = 'block';
 });
 
-// ============================================
-// ПРОВЕРКА РОЛИ
-// ============================================
-function checkUserRole() {
-    const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
-    if (token) {
-        userRole = 'admin';
-        document.getElementById('roleBadge').textContent = '👑 Админ';
-        document.getElementById('roleBadge').style.background = '#2da44e';
-    } else {
-        userRole = 'student';
-        document.getElementById('roleBadge').textContent = '👤 Студент';
-        document.getElementById('roleBadge').style.background = '#4a6cf7';
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ Приложение установлено');
+                document.getElementById('installBanner').style.display = 'none';
+            }
+            deferredPrompt = null;
+        });
     }
 }
+
+function closeInstallBanner() {
+    document.getElementById('installBanner').style.display = 'none';
+}
+
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installBanner').style.display = 'none';
+});
 
 // ============================================
 // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
@@ -317,40 +198,33 @@ function checkUserRole() {
 function switchTab(tab) {
     if (isTransitioning || tab === currentTab) return;
     isTransitioning = true;
-
     const oldTab = document.getElementById(`tab-${currentTab}`);
     const newTab = document.getElementById(`tab-${tab}`);
     const oldBtn = document.querySelector(`.tab[data-tab="${currentTab}"]`);
     const newBtn = document.querySelector(`.tab[data-tab="${tab}"]`);
-
     oldTab.style.transition = 'opacity 0.2s ease, transform 0.25s ease';
     oldTab.style.opacity = '0';
     oldTab.style.transform = 'translateX(-8px)';
-
     setTimeout(() => {
         oldTab.classList.remove('active');
         oldTab.style.opacity = '';
         oldTab.style.transform = '';
         oldBtn.classList.remove('active');
-
         newTab.classList.add('active');
         newTab.style.transition = 'opacity 0.25s ease, transform 0.3s ease';
         newTab.style.opacity = '0';
         newTab.style.transform = 'translateX(8px)';
         newBtn.classList.add('active');
-
         requestAnimationFrame(() => {
             newTab.style.opacity = '1';
             newTab.style.transform = 'translateX(0)';
         });
-
         setTimeout(() => {
             newTab.style.opacity = '';
             newTab.style.transform = '';
             isTransitioning = false;
         }, 350);
     }, 250);
-
     currentTab = tab;
     if (tab === 'calls') renderCalls();
 }
@@ -360,13 +234,11 @@ function switchTab(tab) {
 // ============================================
 function renderCalls() {
     const container = document.getElementById('callsContainer');
-
     const timeLabels = [
         { key: 'morning', label: '🌅 Утро', icon: '☀️', pairs: CALLS_SCHEDULE.slice(0, 2) },
         { key: 'day', label: '☀️ День', icon: '🌤️', pairs: CALLS_SCHEDULE.slice(2, 5) },
         { key: 'evening', label: '🌙 Вечер', icon: '🌆', pairs: CALLS_SCHEDULE.slice(5, 7) }
     ];
-
     let html = `
         <div class="calls-container">
             <div class="calls-header-banner">
@@ -377,10 +249,8 @@ function renderCalls() {
                 </div>
             </div>
     `;
-
     timeLabels.forEach(section => {
         if (!section.pairs || section.pairs.length === 0) return;
-
         html += `
             <div class="calls-section">
                 <div class="calls-section-header">
@@ -389,7 +259,6 @@ function renderCalls() {
                 </div>
                 <div class="calls-grid">
         `;
-
         section.pairs.forEach(call => {
             const pairEmoji = ['①', '②', '③', '④', '⑤', '⑥', '⑦'][call.pair - 1] || '🔢';
             html += `
@@ -416,13 +285,11 @@ function renderCalls() {
                 </div>
             `;
         });
-
         html += `
                 </div>
             </div>
         `;
     });
-
     html += `
         <div class="calls-footer-info">
             <span>🕒 Всего пар: ${CALLS_SCHEDULE.length}</span>
@@ -431,7 +298,6 @@ function renderCalls() {
         </div>
     </div>
     `;
-
     container.innerHTML = html;
 }
 
@@ -442,21 +308,16 @@ function renderScheduleByDay(dayName, viewName) {
     const container = document.getElementById('scheduleContainer');
     const daySchedule = scheduleData[dayName] || {};
     const weekType = getCurrentWeekType();
-
     const pairKeys = Object.keys(daySchedule)
         .filter(key => daySchedule[key].week === 'both' || daySchedule[key].week === weekType)
         .sort((a, b) => parseInt(a) - parseInt(b));
-
     if (pairKeys.length === 0) {
         container.innerHTML = `<div class="no-schedule">📭 Расписания на ${dayName} нет</div>`;
-        document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
-        document.getElementById('pairsCount').textContent = 'Всего пар: 0';
+document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
         return;
     }
-
     const dateStr = getDateByDayName(dayName);
     let html = `<div class="day-schedule"><div class="day-title">📅 ${dayName}, ${dateStr}</div>`;
-
     pairKeys.forEach(key => {
         const pair = daySchedule[key];
         const time = getPairTime(parseInt(key));
@@ -479,12 +340,9 @@ function renderScheduleByDay(dayName, viewName) {
             </div>
         `;
     });
-
     html += '</div>';
     container.innerHTML = html;
-
-    document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
-    document.getElementById('pairsCount').textContent = `Всего пар: ${pairKeys.length}`;
+document.getElementById('currentView').textContent = '📋 Вся неделя';
 }
 
 // ============================================
@@ -496,11 +354,9 @@ async function loadSchedule() {
         const response = await fetch(`${SCHEDULE_URL}?t=${Date.now()}`);
         if (!response.ok) throw new Error('Файл не найден');
         scheduleData = await response.json();
-
         const now = new Date();
         document.getElementById('updateTime').textContent =
             `Обновлено: ${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-
         console.log('✅ Данные загружены, дней:', Object.keys(scheduleData).length);
         return true;
     } catch (e) {
@@ -513,26 +369,6 @@ async function loadSchedule() {
         `;
         return false;
     }
-}
-
-// ============================================
-// ПОЛУЧЕНИЕ ДАТЫ ПО ДНЮ НЕДЕЛИ
-// ============================================
-function getDateByDayName(dayName) {
-    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-    const now = new Date();
-    const todayIndex = now.getDay();
-    const targetIndex = days.indexOf(dayName);
-    
-    // Вычисляем разницу между сегодня и нужным днём
-    let diff = targetIndex - todayIndex;
-    // Если сегодня воскресенье (0), а нужен понедельник (1) — diff будет 1, всё верно
-    // Если нужный день уже прошёл на этой неделе — берём следующую неделю
-    if (diff < 0) diff += 7;
-    
-    const targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + diff);
-    return formatDate(targetDate);
 }
 
 // ============================================
@@ -564,33 +400,24 @@ async function loadTomorrow() {
 async function loadWeek() {
     const loaded = await loadSchedule();
     if (!loaded) return;
-
     const container = document.getElementById('scheduleContainer');
     const weekDays = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
     const weekType = getCurrentWeekType();
     let html = '';
     let totalPairs = 0;
     let foundAny = false;
-
     console.log('📅 Тип недели (A/B):', weekType);
-
     weekDays.forEach(dayName => {
         const daySchedule = scheduleData[dayName] || {};
         const pairKeys = Object.keys(daySchedule)
             .filter(key => daySchedule[key].week === 'both' || daySchedule[key].week === weekType)
             .sort((a, b) => parseInt(a) - parseInt(b));
-
         console.log(`📅 ${dayName}: ${pairKeys.length} пар`);
-
         if (pairKeys.length > 0) {
             foundAny = true;
             totalPairs += pairKeys.length;
-            
-            // ===== ПОЛУЧАЕМ ДАТУ ДЛЯ ЭТОГО ДНЯ =====
             const dateStr = getDateByDayName(dayName);
-            
             html += `<div class="day-schedule"><div class="day-title">📅 ${dayName}, ${dateStr}</div>`;
-
             pairKeys.forEach(key => {
                 const pair = daySchedule[key];
                 const time = getPairTime(parseInt(key));
@@ -613,18 +440,14 @@ async function loadWeek() {
                     </div>
                 `;
             });
-
             html += '</div>';
         }
     });
-
     if (!foundAny) {
         html = `<div class="no-schedule">📭 Нет расписания на эту неделю</div>`;
     }
-
     container.innerHTML = html;
     document.getElementById('currentView').textContent = '📋 Вся неделя';
-    document.getElementById('pairsCount').textContent = `Всего пар: ${totalPairs}`;
     updateDateAndWeek();
 }
 
@@ -634,14 +457,11 @@ async function loadDate(dateValue) {
     if (!loaded) return;
     const parts = dateValue.split('-');
     const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
-    
-    // Пытаемся найти день недели по дате (если в файле есть даты)
     if (scheduleData[dateStr]) {
         renderScheduleByDay(dateStr, `📅 ${dateStr}`);
     } else {
-        // Иначе пробуем найти по дню недели
         const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-        const days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+        const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
         const dayName = days[dateObj.getDay()];
         if (scheduleData[dayName]) {
             renderScheduleByDay(dayName, `📅 ${dateStr} (${dayName})`);
@@ -654,29 +474,127 @@ async function loadDate(dateValue) {
 }
 
 // ============================================
-// PWA — РЕГИСТРАЦИЯ SERVICE WORKER
+// PWA — ОБНОВЛЕНИЕ
 // ============================================
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/schedule-site/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker зарегистрирован:', registration);
-            })
-            .catch(error => {
-                console.log('❌ Ошибка регистрации Service Worker:', error);
-            });
+    navigator.serviceWorker.ready.then(registration => {
+        registration.update();
+        setInterval(() => {
+            registration.update();
+            console.log('🔄 Проверка обновлений PWA...');
+        }, 300000);
     });
 }
 
-// ============================================
-// СКРЫТАЯ КОМАНДА ДЛЯ АДМИНА
-// ============================================
-document.addEventListener('dblclick', (e) => {
-    const target = e.target.closest('.header-icon, .header h1');
-    if (target && userRole === 'admin') {
-        window.location.href = 'login.html';
+let newWorker;
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+        registration.addEventListener('updatefound', () => {
+            newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    showUpdateNotification();
+                }
+            });
+        });
+    });
+}
+
+function showUpdateNotification() {
+    if (sessionStorage.getItem('updateShown')) return;
+    sessionStorage.setItem('updateShown', 'true');
+    const notification = document.createElement('div');
+    notification.className = 'update-notification';
+    notification.innerHTML = `
+        <div class="update-content">
+            <span>🔄 Доступна новая версия приложения</span>
+            <button onclick="updateApp()" class="update-btn">Обновить</button>
+            <button onclick="closeUpdateNotification()" class="update-close">✕</button>
+        </div>
+    `;
+    document.body.prepend(notification);
+    setTimeout(() => {
+        if (notification) {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 500);
+        }
+    }, 10000);
+}
+
+function closeUpdateNotification() {
+    const notification = document.querySelector('.update-notification');
+    if (notification) {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
     }
-});
+    sessionStorage.removeItem('updateShown');
+}
+
+function updateApp() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            if (registration.waiting) {
+                registration.waiting.postMessage('skipWaiting');
+            }
+            const status = document.createElement('div');
+            status.className = 'update-status';
+            status.textContent = '⏳ Обновление...';
+            document.body.prepend(status);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+    }
+}
+
+function addUpdateButton() {
+    const footer = document.querySelector('.footer-main');
+    if (footer) {
+        const updateBtn = document.createElement('button');
+        updateBtn.className = 'update-manual-btn';
+        updateBtn.innerHTML = '🔄 Проверить обновления';
+        updateBtn.onclick = manualUpdateCheck;
+        footer.appendChild(updateBtn);
+    }
+}
+
+function manualUpdateCheck() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
+            showToast('🔍 Проверка обновлений...');
+            setTimeout(() => {
+                if (registration.waiting) {
+                    showUpdateNotification();
+                } else {
+                    showToast('✅ У вас актуальная версия');
+                }
+            }, 2000);
+        });
+    }
+}
+
+async function checkForUpdatesOnStart() {
+    if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration.waiting) {
+            showUpdateNotification();
+        }
+    }
+}
+
+function showToast(text) {
+    const existing = document.querySelector('.update-status');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'update-status';
+    toast.textContent = text;
+    document.body.prepend(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
 
 // ============================================
 // КНОПКА "НАВЕРХ"
@@ -701,12 +619,13 @@ window.addEventListener('scroll', handleBackToTop);
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkUserRole();
     loadToday();
     renderCalls();
     fetchWeather();
     updateDateAndWeek();
-
+    setTimeout(addUpdateButton, 500);
+    setTimeout(checkForUpdatesOnStart, 3000);
+    
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');

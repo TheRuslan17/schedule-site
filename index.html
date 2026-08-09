@@ -71,9 +71,6 @@
                         <p class="subtitle">Группа <strong>И-24-1</strong> · 3 курс · 1 семестр</p>
                     </div>
                 </div>
-                <div class="header-right">
-                    <span class="role-badge" id="roleBadge">👤 Студент</span>
-                </div>
             </div>
         </header>
 
@@ -99,12 +96,11 @@
                 </div>
             </nav>
 
-            <!-- ИНФОРМАЦИОННАЯ ПОЛОСА С ДАТОЙ И НЕДЕЛЕЙ -->
-            <div class="info-bar" id="infoBar">
-                <span id="currentDate">📅 09.08.2026, воскресенье</span>
-                <span id="currentWeek">📆 Неделя А</span>
-                <span id="pairsCount">Всего пар: 0</span>
-            </div>
+<!-- ИНФОРМАЦИОННАЯ ПОЛОСА С ДАТОЙ И НЕДЕЛЕЙ -->
+<div class="info-bar" id="infoBar">
+    <span id="currentDate">📅 09.08.2026, воскресенье</span>
+    <span id="currentWeek">📆 Неделя А</span>
+</div>
 
             <div id="scheduleContainer" role="main" aria-live="polite">
                 <div class="loader" id="loader">
@@ -128,7 +124,6 @@
                 <span>© 2026 · НХТК · Расписание И-24-1</span>
                 <span class="footer-separator">|</span>
                 <span class="update-time" id="updateTime">Обновлено: —</span>
-                <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
             </div>
             
             <div class="disclaimer">
@@ -148,6 +143,7 @@
 
     <script src="script.js"></script>
     
+    <!-- ===== ЗАЩИТА ОТ ПРОСМОТРА КОДА ===== -->
     <script>
         (function() {
             document.addEventListener('keydown', function(e) {
