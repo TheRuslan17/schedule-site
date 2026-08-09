@@ -6,10 +6,8 @@
     <title>📅 Расписание И-24-1</title>
     <meta name="description" content="Актуальное расписание занятий для группы И-24-1">
     
-    <!-- ===== ПРИНУДИТЕЛЬНЫЙ HTTPS ===== -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     
-    <!-- ===== PWA (PROGRESSIVE WEB APP) ===== -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,11 +18,9 @@
     <meta name="msapplication-TileColor" content="#4a6cf7">
     <meta name="msapplication-TileImage" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     
-    <!-- ===== ИКОНКИ ===== -->
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     
-    <!-- ===== ПРЕДЗАГРУЗКА ===== -->
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="script.js" as="script">
     
@@ -32,9 +28,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- ============================================
-             БАННЕР С ФОТОГРАФИЕЙ КОЛЛЕДЖА
-             ============================================ -->
+        <!-- БАННЕР С ФОТОГРАФИЕЙ КОЛЛЕДЖА -->
         <div class="college-banner">
             <img src="НХТК.jpg" alt="НХТК - Невинномысский химико-технологический колледж" class="college-photo" loading="lazy">
             <div class="banner-overlay">
@@ -45,9 +39,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ПОГОДА
-             ============================================ -->
+        <!-- ПОГОДА -->
         <div class="weather-widget" id="weatherWidget">
             <div class="weather-loading">
                 <span class="loader-dot"></span>
@@ -56,9 +48,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             PWA БАННЕР УСТАНОВКИ
-             ============================================ -->
+        <!-- PWA БАННЕР УСТАНОВКИ -->
         <div id="installBanner" class="install-banner" style="display:none;">
             <div class="install-banner-content">
                 <span class="install-icon">📅</span>
@@ -71,9 +61,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ШАПКА
-             ============================================ -->
+        <!-- ШАПКА -->
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
@@ -89,9 +77,7 @@
             </div>
         </header>
 
-        <!-- ============================================
-             ВКЛАДКИ
-             ============================================ -->
+        <!-- ВКЛАДКИ -->
         <nav class="tabs" role="tablist">
             <button class="tab active" data-tab="schedule" onclick="switchTab('schedule')">
                 📅 Расписание
@@ -101,22 +87,22 @@
             </button>
         </nav>
 
-        <!-- ============================================
-             ВКЛАДКА 1: РАСПИСАНИЕ
-             ============================================ -->
+        <!-- ВКЛАДКА 1: РАСПИСАНИЕ -->
         <div id="tab-schedule" class="tab-content active">
             <nav class="controls" role="navigation">
                 <button class="btn btn-primary" onclick="loadToday()">📅 Сегодня</button>
                 <button class="btn btn-outline" onclick="loadTomorrow()">📅 Завтра</button>
-                <button class="btn btn-outline" onclick="loadWeek(0)">📋 Неделя</button>
+                <button class="btn btn-outline" onclick="loadWeek()">📋 Неделя</button>
                 <div class="date-picker-wrapper">
                     <label for="datePicker" class="visually-hidden">Выберите дату</label>
                     <input type="date" id="datePicker" onchange="loadDate(this.value)">
                 </div>
             </nav>
 
+            <!-- ИНФОРМАЦИОННАЯ ПОЛОСА С ДАТОЙ И НЕДЕЛЕЙ -->
             <div class="info-bar" id="infoBar">
-                <span id="currentView">📅 Сегодня</span>
+                <span id="currentDate">📅 09.08.2026, воскресенье</span>
+                <span id="currentWeek">📆 Неделя А</span>
                 <span id="pairsCount">Всего пар: 0</span>
             </div>
 
@@ -128,9 +114,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ
-             ============================================ -->
+        <!-- ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ -->
         <div id="tab-calls" class="tab-content">
             <h2 class="tab-title">🔔 Расписание звонков</h2>
             <div id="callsContainer">
@@ -138,9 +122,7 @@
             </div>
         </div>
 
-        <!-- ============================================
-             ПОДВАЛ
-             ============================================ -->
+        <!-- ПОДВАЛ -->
         <footer class="footer">
             <div class="footer-main">
                 <span>© 2026 · НХТК · Расписание И-24-1</span>
@@ -149,14 +131,12 @@
                 <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
             </div>
             
-            <!-- ===== ДИСКЛЕЙМЕР О НЕОФИЦИАЛЬНОСТИ ===== -->
             <div class="disclaimer">
                 ⚠️ Данный сайт является <strong>неофициальным</strong> информационным ресурсом 
                 и создан для удобства студентов. Актуальное расписание уточняйте 
                 в официальных источниках колледжа.
             </div>
             
-            <!-- ===== ДИСКЛЕЙМЕР О ПОГОДЕ ===== -->
             <div class="weather-disclaimer">
                 🌤️ Погода предоставлена сервисом OpenWeatherMap. 
                 Мы не несём ответственность за её точность и актуальность.
@@ -164,73 +144,29 @@
         </footer>
     </div>
 
-    <!-- ===== КНОПКА "НАВЕРХ" ===== -->
     <button id="backToTop" class="back-to-top" onclick="scrollToTop()" aria-label="Наверх">↑</button>
 
     <script src="script.js"></script>
     
-    <!-- ===== ЗАЩИТА ОТ ПРОСМОТРА КОДА ===== -->
     <script>
         (function() {
-            // ===== 1. БЛОКИРОВКА F12, CTRL+U, CTRL+SHIFT+I =====
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'F12') {
-                    e.preventDefault();
-                    return false;
-                }
-                if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
-                    e.preventDefault();
-                    return false;
-                }
-                if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) {
-                    e.preventDefault();
-                    return false;
-                }
-                if (e.ctrlKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
-                    e.preventDefault();
-                    return false;
-                }
-                if (e.key === 'PrintScreen') {
-                    e.preventDefault();
-                    return false;
-                }
+                if (e.key === 'F12') { e.preventDefault(); return false; }
+                if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); return false; }
+                if (e.key === 'PrintScreen') { e.preventDefault(); return false; }
             });
-
-            // ===== 2. БЛОКИРОВКА ПРАВОЙ КНОПКИ =====
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                return false;
-            });
-
-            // ===== 3. БЛОКИРОВКА ВЫДЕЛЕНИЯ =====
-            document.addEventListener('selectstart', function(e) {
-                e.preventDefault();
-                return false;
-            });
-
-            // ===== 4. БЛОКИРОВКА ПЕРЕТАСКИВАНИЯ =====
-            document.addEventListener('dragstart', function(e) {
-                e.preventDefault();
-                return false;
-            });
-
-            // ===== 5. БЛОКИРОВКА КОПИРОВАНИЯ =====
-            document.addEventListener('copy', function(e) {
-                e.preventDefault();
-                return false;
-            });
-
-            // ===== 6. ЗАЩИТА ОТ VIEW-SOURCE =====
+            document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+            document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+            document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            document.addEventListener('copy', function(e) { e.preventDefault(); return false; });
             if (window.location.protocol === 'view-source:') {
                 window.location.href = window.location.href.replace('view-source:', '');
             }
-
-            // ===== 7. ЗАЩИТА ОТ IFRAME =====
             if (window.top !== window.self) {
                 window.top.location = window.self.location;
             }
-
-            // ===== 8. ПРЕДУПРЕЖДЕНИЕ В КОНСОЛИ =====
             console.log('%c🔒 Защита включена', 'color: #4a6cf7; font-size: 16px; font-weight: bold;');
             console.log('%c🚫 Просмотр кода запрещён', 'color: #cf222e; font-size: 14px;');
             console.log('%c⚠️ Данный сайт является неофициальным', 'color: #f59f00; font-size: 13px;');
