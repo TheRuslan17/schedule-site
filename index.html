@@ -21,7 +21,33 @@
 </head>
 <body>
     <div class="container">
-        <!-- ШАПКА -->
+        <!-- ============================================
+             БАННЕР С ФОТОГРАФИЕЙ КОЛЛЕДЖА
+             ============================================ -->
+        <div class="college-banner">
+            <img src="НХТК.jpg" alt="НХТК - Невинномысский химико-технологический колледж" class="college-photo" loading="lazy">
+            <div class="banner-overlay">
+                <div class="banner-text">
+                    <h2>🏫 Невинномысский химико-технологический колледж</h2>
+                    <p>Группа И-24-1 · 3 курс · 1 семестр</p>
+                </div>
+            </div>
+        </div>
+
+<!-- ============================================
+     ПОГОДА — КРАСИВЫЙ ВИДЖЕТ
+     ============================================ -->
+<div class="weather-widget" id="weatherWidget">
+    <div class="weather-loading">
+        <span class="loader-dot"></span>
+        <span class="loader-dot"></span>
+        <span class="loader-dot"></span>
+    </div>
+</div>
+
+        <!-- ============================================
+             ШАПКА
+             ============================================ -->
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
@@ -37,7 +63,9 @@
             </div>
         </header>
 
-        <!-- ВКЛАДКИ (РАСПИСАНИЕ / ЗВОНКИ) -->
+        <!-- ============================================
+             ВКЛАДКИ
+             ============================================ -->
         <nav class="tabs" role="tablist">
             <button class="tab active" data-tab="schedule" onclick="switchTab('schedule')">
                 📅 Расписание
@@ -47,7 +75,9 @@
             </button>
         </nav>
 
-        <!-- ВКЛАДКА 1: РАСПИСАНИЕ -->
+        <!-- ============================================
+             ВКЛАДКА 1: РАСПИСАНИЕ
+             ============================================ -->
         <div id="tab-schedule" class="tab-content active">
             <nav class="controls" role="navigation">
                 <button class="btn btn-primary" onclick="loadToday()">📅 Сегодня</button>
@@ -72,21 +102,32 @@
             </div>
         </div>
 
-<!-- ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ -->
-<div id="tab-calls" class="tab-content">
-    <h2 class="tab-title">🔔 Расписание звонков</h2>
-    <div id="callsContainer">
-        <div class="loader"><div class="loader-spinner"></div><p>⏳ Загрузка...</p></div>
-    </div>
-</div>
+        <!-- ============================================
+             ВКЛАДКА 2: РАСПИСАНИЕ ЗВОНКОВ
+             ============================================ -->
+        <div id="tab-calls" class="tab-content">
+            <h2 class="tab-title">🔔 Расписание звонков</h2>
+            <div id="callsContainer">
+                <div class="loader"><div class="loader-spinner"></div><p>⏳ Загрузка...</p></div>
+            </div>
+        </div>
 
-        <!-- ПОДВАЛ -->
-        <footer class="footer">
-            <span>© 2026 · Расписание И-24-1</span>
-            <span class="footer-separator">|</span>
-            <span class="update-time" id="updateTime">Обновлено: —</span>
-            <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
-        </footer>
+<!-- ============================================
+     ПОДВАЛ
+     ============================================ -->
+<footer class="footer">
+    <span>© 2026 · НХТК · Расписание И-24-1</span>
+    <span class="footer-separator">|</span>
+    <span class="update-time" id="updateTime">Обновлено: —</span>
+    <a href="login.html" class="admin-link" aria-label="Админ-панель (скрытая)">⚙️</a>
+    
+    <!-- ===== ДИСКЛЕЙМЕР О ПОГОДЕ ===== -->
+    <div class="weather-disclaimer">
+        ⚠️ Погода предоставлена сервисом OpenWeatherMap. 
+        Мы не несём ответственность за её точность и актуальность.
+        Рекомендуем проверять прогноз в официальных источниках.
+    </div>
+</footer>
     </div>
 
     <!-- КНОПКА "НАВЕРХ" -->

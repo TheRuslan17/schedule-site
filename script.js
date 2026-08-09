@@ -12,21 +12,178 @@ const PAIR_TIMES = {
     7: '18:30-20:00'
 };
 
+// ===== ПОГОДА (прогноз на 5 дней) =====
+const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e';
+const CITY = 'Nevinnomyssk';
+const WEATHER_URL = `https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=ru&cnt=6`;
+
+// ===== РАСПИСАНИЕ ЗВОНКОВ =====
+const CALLS_SCHEDULE = [
+    { pair: 1, start: '08:00', end: '09:30', break: '20 мин' },
+    { pair: 2, start: '09:50', end: '11:20', break: '30 мин' },
+    { pair: 3, start: '11:50', end: '13:20', break: '10 мин' },
+    { pair: 4, start: '13:30', end: '15:00', break: '10 мин' },
+    { pair: 5, start: '15:10', end: '16:40', break: '10 мин' },
+    { pair: 6, start: '16:50', end: '18:20', break: '10 мин' },
+    { pair: 7, start: '18:30', end: '20:00', break: '—' }
+];
+
+const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+const SUBJECT_ICONS = {
+    'Технология разработки программного обеспечения': '💻',
+    'Инструментальные средства разработки программного обеспечения': '🛠️',
+    'Математическое моделирование': '📐',
+    'Основы финансовой грамотности': '💰',
+    'Физическая культура': '🏃',
+    'Иностранный язык в профессиональной деятельности': '🌍',
+    'Разработка мобильных приложений': '📱'
+};
+
+let scheduleData = {};
+let currentView = 'today';
+let currentWeekOffset = 0;
+let currentTab = 'schedule';
+let userRole = 'student';
+let isTransitioning = false;
+
 // ============================================
-// РАСПИСАНИЕ ЗВОНКОВ (СТИЛЬНАЯ ВЕРСИЯ)
+// ПОГОДА
+// ============================================
+async function fetchWeather() {
+    const container = document.getElementById('weatherWidget');
+    
+    try {
+        const response = await fetch(WEATHER_URL);
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        const data = await response.json();
+        
+        // Сегодня
+        const today = data.list[0];
+        const todayEmoji = getWeatherEmoji(today.weather[0].icon);
+        const todayTemp = Math.round(today.main.temp);
+        const todayDesc = today.weather[0].description;
+        const feelsLike = Math.round(today.main.feels_like);
+        
+        // Завтра (берём из списка)
+        const tomorrow = data.list[4] || data.list[data.list.length - 1];
+        const tomorrowEmoji = getWeatherEmoji(tomorrow.weather[0].icon);
+        const tomorrowTemp = Math.round(tomorrow.main.temp);
+        const tomorrowDesc = tomorrow.weather[0].description;
+        
+        container.innerHTML = `
+            <div class="weather-content">
+                <div class="weather-main">
+                    <span class="weather-icon">${todayEmoji}</span>
+                    <div class="weather-info">
+                        <span class="weather-temp">${todayTemp}°C</span>
+                        <span class="weather-desc">${todayDesc}</span>
+                        <span class="weather-feels">Ощущается как ${feelsLike}°C</span>
+                        <span class="weather-city">📍 ${data.city.name}</span>
+                    </div>
+                </div>
+                <div class="weather-divider"></div>
+                <div class="weather-tomorrow">
+                    <span class="weather-tomorrow-label">Завтра</span>
+                    <span class="weather-tomorrow-icon">${tomorrowEmoji}</span>
+                    <span class="weather-tomorrow-temp">${tomorrowTemp}°C</span>
+                    <span class="weather-tomorrow-desc">${tomorrowDesc}</span>
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        container.innerHTML = `
+            <div class="weather-error">
+                ⚠️ Не удалось загрузить погоду
+            </div>
+        `;
+    }
+}
+
+function getWeatherEmoji(icon) {
+    const map = {
+        '01d': '☀️', '01n': '🌙',
+        '02d': '⛅', '02n': '☁️',
+        '03d': '☁️', '03n': '☁️',
+        '04d': '☁️', '04n': '☁️',
+        '09d': '🌧️', '09n': '🌧️',
+        '10d': '🌦️', '10n': '🌧️',
+        '11d': '⛈️', '11n': '⛈️',
+        '13d': '❄️', '13n': '❄️',
+        '50d': '🌫️', '50n': '🌫️'
+    };
+    return map[icon] || '🌤️';
+}
+
+// ============================================
+// ПРОВЕРКА РОЛИ
+// ============================================
+function checkUserRole() {
+    const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+    if (token) {
+        userRole = 'admin';
+        document.getElementById('roleBadge').textContent = '👑 Админ';
+        document.getElementById('roleBadge').style.background = '#2da44e';
+    } else {
+        userRole = 'student';
+        document.getElementById('roleBadge').textContent = '👤 Студент';
+        document.getElementById('roleBadge').style.background = '#4a6cf7';
+    }
+}
+
+// ============================================
+// ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+// ============================================
+function switchTab(tab) {
+    if (isTransitioning || tab === currentTab) return;
+    isTransitioning = true;
+    
+    const oldTab = document.getElementById(`tab-${currentTab}`);
+    const newTab = document.getElementById(`tab-${tab}`);
+    const oldBtn = document.querySelector(`.tab[data-tab="${currentTab}"]`);
+    const newBtn = document.querySelector(`.tab[data-tab="${tab}"]`);
+    
+    oldTab.style.transition = 'opacity 0.2s ease, transform 0.25s ease';
+    oldTab.style.opacity = '0';
+    oldTab.style.transform = 'translateX(-8px)';
+    
+    setTimeout(() => {
+        oldTab.classList.remove('active');
+        oldTab.style.opacity = '';
+        oldTab.style.transform = '';
+        oldBtn.classList.remove('active');
+        
+        newTab.classList.add('active');
+        newTab.style.transition = 'opacity 0.25s ease, transform 0.3s ease';
+        newTab.style.opacity = '0';
+        newTab.style.transform = 'translateX(8px)';
+        newBtn.classList.add('active');
+        
+        requestAnimationFrame(() => {
+            newTab.style.opacity = '1';
+            newTab.style.transform = 'translateX(0)';
+        });
+        
+        setTimeout(() => {
+            newTab.style.opacity = '';
+            newTab.style.transform = '';
+            isTransitioning = false;
+        }, 350);
+    }, 250);
+    
+    currentTab = tab;
+    if (tab === 'calls') renderCalls();
+}
+
+// ============================================
+// РАСПИСАНИЕ ЗВОНКОВ
 // ============================================
 function renderCalls() {
     const container = document.getElementById('callsContainer');
     
-    // Группируем пары по времени суток
-    const morning = CALLS_SCHEDULE.slice(0, 2);   // 1-2 пара
-    const day = CALLS_SCHEDULE.slice(2, 5);       // 3-5 пара
-    const evening = CALLS_SCHEDULE.slice(5, 7);   // 6-7 пара
-    
     const timeLabels = [
-        { key: 'morning', label: '🌅 Утро', icon: '☀️', pairs: morning },
-        { key: 'day', label: '☀️ День', icon: '🌤️', pairs: day },
-        { key: 'evening', label: '🌙 Вечер', icon: '🌆', pairs: evening }
+        { key: 'morning', label: '🌅 Утро', icon: '☀️', pairs: CALLS_SCHEDULE.slice(0, 2) },
+        { key: 'day', label: '☀️ День', icon: '🌤️', pairs: CALLS_SCHEDULE.slice(2, 5) },
+        { key: 'evening', label: '🌙 Вечер', icon: '🌆', pairs: CALLS_SCHEDULE.slice(5, 7) }
     ];
     
     let html = `
@@ -41,7 +198,6 @@ function renderCalls() {
     `;
     
     timeLabels.forEach(section => {
-        // Пропускаем пустые секции
         if (!section.pairs || section.pairs.length === 0) return;
         
         html += `
@@ -86,7 +242,6 @@ function renderCalls() {
         `;
     });
     
-    // Информационная строка
     html += `
         <div class="calls-footer-info">
             <span>🕒 Всего пар: ${CALLS_SCHEDULE.length}</span>
@@ -96,68 +251,6 @@ function renderCalls() {
     </div>
     `;
     
-    container.innerHTML = html;
-}
-
-// ============================================
-// ПРОВЕРКА РОЛИ
-// ============================================
-function checkUserRole() {
-    const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
-    if (token) {
-        userRole = 'admin';
-        document.getElementById('roleBadge').textContent = '👑 Админ';
-        document.getElementById('roleBadge').style.background = '#2da44e';
-    } else {
-        userRole = 'student';
-        document.getElementById('roleBadge').textContent = '👤 Студент';
-        document.getElementById('roleBadge').style.background = '#4a6cf7';
-    }
-}
-
-// ============================================
-// ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-// ============================================
-function switchTab(tab) {
-    currentTab = tab;
-    
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-    
-    document.getElementById(`tab-${tab}`).classList.add('active');
-    document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
-    
-    if (tab === 'calls') renderCalls();
-}
-
-// ============================================
-// РАСПИСАНИЕ ЗВОНКОВ (БЕЗ СТАТУСОВ)
-// ============================================
-function renderCalls() {
-    const container = document.getElementById('callsContainer');
-    
-    let html = `
-        <div class="calls-schedule">
-            <div class="calls-header">
-                <span>🔢 Пара</span>
-                <span>⏰ Начало</span>
-                <span>⏰ Конец</span>
-                <span>☕ Перемена</span>
-            </div>
-    `;
-    
-    CALLS_SCHEDULE.forEach(call => {
-        html += `
-            <div class="calls-row">
-                <span><strong>${call.pair}</strong></span>
-                <span>${call.start}</span>
-                <span>${call.end}</span>
-                <span>${call.break}</span>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
     container.innerHTML = html;
 }
 
@@ -245,7 +338,9 @@ const scrollToTop = () => {
 
 window.addEventListener('scroll', handleBackToTop);
 
-// ===== ЗАГРУЗКА ДАННЫХ =====
+// ============================================
+// ЗАГРУЗКА ДАННЫХ
+// ============================================
 const loadSchedule = async () => {
     const container = document.getElementById('scheduleContainer');
     showLoader();
@@ -553,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkUserRole();
     loadToday();
     renderCalls();
+    fetchWeather();
     
     const today = new Date();
     const year = today.getFullYear();
