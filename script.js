@@ -12,8 +12,8 @@ const PAIR_TIMES = {
     7: '18:30-20:00'
 };
 
-// ===== ПОГОДА (прогноз на 5 дней) =====
-const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e';
+// ===== ПОГОДА =====
+const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e'; // Получить на openweathermap.org
 const CITY = 'Nevinnomyssk';
 const WEATHER_URL = `https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=ru&cnt=6`;
 
@@ -45,6 +45,7 @@ let currentWeekOffset = 0;
 let currentTab = 'schedule';
 let userRole = 'student';
 let isTransitioning = false;
+let deferredPrompt;
 
 // ============================================
 // ПОГОДА
@@ -57,14 +58,12 @@ async function fetchWeather() {
         if (!response.ok) throw new Error('Ошибка загрузки');
         const data = await response.json();
         
-        // Сегодня
         const today = data.list[0];
         const todayEmoji = getWeatherEmoji(today.weather[0].icon);
         const todayTemp = Math.round(today.main.temp);
         const todayDesc = today.weather[0].description;
         const feelsLike = Math.round(today.main.feels_like);
         
-        // Завтра (берём из списка)
         const tomorrow = data.list[4] || data.list[data.list.length - 1];
         const tomorrowEmoji = getWeatherEmoji(tomorrow.weather[0].icon);
         const tomorrowTemp = Math.round(tomorrow.main.temp);
@@ -113,6 +112,39 @@ function getWeatherEmoji(icon) {
     };
     return map[icon] || '🌤️';
 }
+
+// ============================================
+// PWA — УСТАНОВКА ПРИЛОЖЕНИЯ
+// ============================================
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').style.display = 'block';
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ Приложение установлено');
+                document.getElementById('installBanner').style.display = 'none';
+            } else {
+                console.log('❌ Установка отменена');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+
+function closeInstallBanner() {
+    document.getElementById('installBanner').style.display = 'none';
+}
+
+window.addEventListener('appinstalled', () => {
+    console.log('✅ Приложение успешно установлено');
+    document.getElementById('installBanner').style.display = 'none';
+});
 
 // ============================================
 // ПРОВЕРКА РОЛИ
@@ -630,6 +662,34 @@ const loadDate = async (dateValue) => {
     currentWeekOffset = 0;
     await showScheduleByDate(dateStr, `📅 ${dateStr}`);
 };
+
+// ============================================
+// PWA — РЕГИСТРАЦИЯ SERVICE WORKER
+// ============================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/schedule-site/sw.js')
+            .then(registration => {
+                console.log('✅ Service Worker зарегистрирован:', registration);
+            })
+            .catch(error => {
+                console.log('❌ Ошибка регистрации Service Worker:', error);
+            });
+    });
+}
+
+// ===== ПРОВЕРКА ОБНОВЛЕНИЙ =====
+let newWorker;
+navigator.serviceWorker.ready.then(registration => {
+    registration.addEventListener('updatefound', () => {
+        newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showNotification('🔄 Новая версия сайта доступна! Обновите страницу.');
+            }
+        });
+    });
+});
 
 // ============================================
 // СКРЫТАЯ КОМАНДА ДЛЯ АДМИНА
