@@ -1,7 +1,7 @@
 // ============================================
-// SERVICE WORKER — ОФЛАЙН-РЕЖИМ
+// SERVICE WORKER — ОФЛАЙН-РЕЖИМ + АВТООБНОВЛЕНИЕ
 // ============================================
-const CACHE_NAME = 'schedule-v1';
+const CACHE_NAME = 'schedule-v2'; // Увеличиваем версию для принудительного обновления
 const ASSETS = [
     '/schedule-site/',
     '/schedule-site/index.html',
@@ -21,7 +21,7 @@ self.addEventListener('install', event => {
                 console.log('📦 Кэширование ресурсов...');
                 return cache.addAll(ASSETS);
             })
-            .then(() => self.skipWaiting())
+            .then(() => self.skipWaiting()) // Принудительная активация
     );
 });
 
@@ -29,11 +29,15 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys => {
+            // Удаляем старые кэши
             return Promise.all(
                 keys.filter(key => key !== CACHE_NAME)
                     .map(key => caches.delete(key))
             );
-        }).then(() => self.clients.claim())
+        }).then(() => {
+            // Захватываем контроль над всеми клиентами
+            return self.clients.claim();
+        })
     );
 });
 
@@ -42,15 +46,17 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(cached => {
-                // Если есть в кэше — отдаём
+                // Если есть в кэше — отдаём, но проверяем обновления в фоне
                 if (cached) {
                     // Фоновое обновление для schedule.json
                     if (event.request.url.includes('schedule.json')) {
                         fetch(event.request)
                             .then(response => {
-                                caches.open(CACHE_NAME).then(cache => {
-                                    cache.put(event.request, response);
-                                });
+                                if (response && response.status === 200) {
+                                    caches.open(CACHE_NAME).then(cache => {
+                                        cache.put(event.request, response);
+                                    });
+                                }
                             })
                             .catch(() => {});
                     }
@@ -80,4 +86,11 @@ self.addEventListener('fetch', event => {
                     });
             })
     );
+});
+
+// ===== ПРОВЕРКА ОБНОВЛЕНИЙ =====
+self.addEventListener('message', (event) => {
+    if (event.data === 'skipWaiting') {
+        self.skipWaiting();
+    }
 });

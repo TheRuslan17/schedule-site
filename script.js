@@ -156,33 +156,143 @@ function getWeatherEmoji(icon) {
 }
 
 // ============================================
-// PWA — УСТАНОВКА ПРИЛОЖЕНИЯ
+// PWA — ПОЛНОЕ ОБНОВЛЕНИЕ
 // ============================================
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('installBanner').style.display = 'block';
-});
 
-function installApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('✅ Приложение установлено');
-                document.getElementById('installBanner').style.display = 'none';
-            }
-            deferredPrompt = null;
+// ===== 1. АВТОМАТИЧЕСКАЯ ПРОВЕРКА ОБНОВЛЕНИЙ =====
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+        // Проверяем обновления при каждом запуске
+        registration.update();
+        
+        // Проверяем обновления каждые 5 минут
+        setInterval(() => {
+            registration.update();
+            console.log('🔄 Проверка обновлений PWA...');
+        }, 300000); // 5 минут
+    });
+}
+
+// ===== 2. ОБРАБОТКА НОВОЙ ВЕРСИИ =====
+let newWorker;
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+        registration.addEventListener('updatefound', () => {
+            newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Новая версия установлена, показываем уведомление
+                    showUpdateNotification();
+                }
+            });
+        });
+    });
+}
+
+// ===== 3. УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ =====
+function showUpdateNotification() {
+    // Проверяем, не показывали ли уже
+    if (sessionStorage.getItem('updateShown')) return;
+    sessionStorage.setItem('updateShown', 'true');
+    
+    // Создаём уведомление
+    const notification = document.createElement('div');
+    notification.className = 'update-notification';
+    notification.innerHTML = `
+        <div class="update-content">
+            <span>🔄 Доступна новая версия приложения</span>
+            <button onclick="updateApp()" class="update-btn">Обновить</button>
+            <button onclick="closeUpdateNotification()" class="update-close">✕</button>
+        </div>
+    `;
+    document.body.prepend(notification);
+    
+    // Автоматическое скрытие через 10 секунд
+    setTimeout(() => {
+        if (notification) {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 500);
+        }
+    }, 10000);
+}
+
+function closeUpdateNotification() {
+    const notification = document.querySelector('.update-notification');
+    if (notification) {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+    }
+    sessionStorage.removeItem('updateShown');
+}
+
+// ===== 4. РУЧНОЕ ОБНОВЛЕНИЕ =====
+function updateApp() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            // Отправляем сигнал на обновление
+            registration.waiting.postMessage('skipWaiting');
+            
+            // Показываем сообщение
+            const status = document.createElement('div');
+            status.className = 'update-status';
+            status.textContent = '⏳ Обновление...';
+            document.body.prepend(status);
+            
+            // Перезагружаем после обновления
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         });
     }
 }
 
-function closeInstallBanner() {
-    document.getElementById('installBanner').style.display = 'none';
+// ===== 5. КНОПКА РУЧНОГО ОБНОВЛЕНИЯ (в подвале) =====
+function addUpdateButton() {
+    const footer = document.querySelector('.footer-main');
+    if (footer) {
+        const updateBtn = document.createElement('button');
+        updateBtn.className = 'update-manual-btn';
+        updateBtn.innerHTML = '🔄 Проверить обновления';
+        updateBtn.onclick = manualUpdateCheck;
+        footer.appendChild(updateBtn);
+    }
 }
 
-window.addEventListener('appinstalled', () => {
-    document.getElementById('installBanner').style.display = 'none';
+function manualUpdateCheck() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
+            showToast('🔍 Проверка обновлений...');
+            
+            // Проверяем через 2 секунды
+            setTimeout(() => {
+                if (registration.waiting) {
+                    showUpdateNotification();
+                } else {
+                    showToast('✅ У вас актуальная версия');
+                }
+            }, 2000);
+        });
+    }
+}
+
+// ===== 6. УВЕДОМЛЕНИЕ ПРИ ОТКРЫТИИ (если есть новая версия) =====
+async function checkForUpdatesOnStart() {
+    if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration.waiting) {
+            showUpdateNotification();
+        }
+    }
+}
+
+// ===== 7. ВЫЗОВ ПРИ ЗАГРУЗКЕ =====
+document.addEventListener('DOMContentLoaded', () => {
+    // Добавляем кнопку обновления в подвал
+    setTimeout(addUpdateButton, 500);
+    
+    // Проверяем обновления при старте
+    setTimeout(checkForUpdatesOnStart, 3000);
 });
 
 // ============================================
