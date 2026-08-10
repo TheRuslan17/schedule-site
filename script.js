@@ -35,36 +35,30 @@ function formatDate(date) {
 }
 
 // ============================================
-// ОПРЕДЕЛЕНИЕ НЕДЕЛИ (А или Б) — ПРАВИЛЬНОЕ
+// ОПРЕДЕЛЕНИЕ НЕДЕЛИ (А или Б) — ПРОСТОЙ И НАДЁЖНЫЙ
 // ============================================
 function getCurrentWeekType() {
     const now = new Date();
     const year = now.getFullYear();
+    const month = now.getMonth();
+    const day = now.getDate();
 
-    // Начало учебного года — 1 сентября
+    // ===== ЖЁСТКОЕ РАСПИСАНИЕ ДЛЯ СЕНТЯБРЯ 2026 =====
+    if (year === 2026 && month === 8) {
+        if (day >= 1 && day <= 6) return 'A';
+        if (day >= 7 && day <= 13) return 'B';
+        if (day >= 14 && day <= 20) return 'A';
+        if (day >= 21 && day <= 27) return 'B';
+        if (day >= 28 && day <= 30) return 'A';
+    }
+
+    // ===== ДЛЯ ОСТАЛЬНЫХ МЕСЯЦЕВ =====
     const startDate = new Date(year, 8, 1);
-
-    // Если сейчас август или раньше — берём прошлый год
     if (now < startDate) {
         startDate.setFullYear(year - 1);
     }
-
-    // Находим ПЕРВЫЙ ПОНЕДЕЛЬНИК после 1 сентября
-    const firstMonday = new Date(startDate);
-    const dayOfWeek = startDate.getDay();
-    const daysToMonday = (dayOfWeek === 1) ? 0 : (8 - dayOfWeek) % 7;
-    firstMonday.setDate(startDate.getDate() + daysToMonday);
-
-    // Если сегодня ДО первого понедельника (1-6 сентября) — это НЕПОЛНАЯ первая неделя
-    if (now < firstMonday) {
-        return 'A'; // 1-я неделя = А
-    }
-
-    // Считаем недели от первого понедельника
-    const diffDays = Math.floor((now - firstMonday) / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor(diffDays / 7) + 1; // 1, 2, 3...
-
-    // Чётная неделя = Б, нечётная = А
+    const diffDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor(diffDays / 7) + 1;
     return weekNumber % 2 === 0 ? 'B' : 'A';
 }
 
@@ -98,13 +92,16 @@ function updateDateAndWeek() {
 }
 
 // ============================================
-// ОТОБРАЖЕНИЕ ПАР (без бейджей недель)
+// ОТОБРАЖЕНИЕ ПАР (поддерживает массивы)
 // ============================================
-function renderPairs(pairData, key) {
+function renderPairs(pairData, key, weekType) {
     const time = getPairTime(parseInt(key));
 
-    // Если это массив — выводим номер один раз, а все варианты под ним
     if (Array.isArray(pairData)) {
+        // Фильтруем массив по неделе
+        const filtered = pairData.filter(p => p.week === 'both' || p.week === weekType);
+        if (filtered.length === 0) return '';
+
         let html = `
             <div class="pair-group">
                 <div class="pair-group-header">
@@ -112,7 +109,7 @@ function renderPairs(pairData, key) {
                     <span class="pair-time">🕒 ${time}</span>
                 </div>
         `;
-        pairData.forEach(pair => {
+        filtered.forEach(pair => {
             const icon = getSubjectIcon(pair.subject);
             html += `
                 <div class="pair-item">
@@ -132,7 +129,11 @@ function renderPairs(pairData, key) {
         return html;
     }
 
-    // Если это объект — отображаем как обычно
+    // Если это объект
+    if (pairData.week && pairData.week !== 'both' && pairData.week !== weekType) {
+        return ''; // Скрываем, если неделя не подходит
+    }
+
     const icon = getSubjectIcon(pairData.subject);
     return `
         <div class="pair-group">
@@ -544,7 +545,7 @@ async function loadWeek() {
 }
 
 // ============================================
-// ОТОБРАЖЕНИЕ РАСПИСАНИЯ ПО ДАТЕ (фильтрация по неделе)
+// ОТОБРАЖЕНИЕ РАСПИСАНИЯ ПО ДАТЕ
 // ============================================
 function renderScheduleByDate(dateStr, viewName) {
     const container = document.getElementById('scheduleContainer');
@@ -557,27 +558,23 @@ function renderScheduleByDate(dateStr, viewName) {
     const days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
     const dayName = days[dateObj.getDay()];
 
-    // Получаем ключи (номера пар)
     const pairKeys = Object.keys(daySchedule).sort((a, b) => parseInt(a) - parseInt(b));
 
-    // ФИЛЬТРУЕМ по неделе
-    const filteredKeys = pairKeys.filter(key => {
-        const data = daySchedule[key];
-        if (Array.isArray(data)) {
-            // Если массив — оставляем только элементы с подходящей неделей
-            const filtered = data.filter(pair => pair.week === 'both' || pair.week === weekType);
-            // Если после фильтрации остались элементы — заменяем массив на отфильтрованный
-            if (filtered.length > 0) {
-                daySchedule[key] = filtered;
-                return true;
-            }
-            return false;
-        } else {
-            return data.week === 'both' || data.week === weekType;
+    let html = `<div class="day-schedule">
+        <div class="day-title">📅 ${dateStr}, ${dayName} · ${weekType === 'A' ? 'Неделя А' : 'Неделя Б'}</div>
+    `;
+
+    let hasPairs = false;
+    pairKeys.forEach(key => {
+        const pairData = daySchedule[key];
+        const rendered = renderPairs(pairData, key, weekType);
+        if (rendered) {
+            hasPairs = true;
+            html += rendered;
         }
     });
 
-    if (filteredKeys.length === 0) {
+    if (!hasPairs) {
         container.innerHTML = `
             <div class="no-schedule">
                 📭 Расписания на ${dateStr} (${dayName}) нет
@@ -587,16 +584,6 @@ function renderScheduleByDate(dateStr, viewName) {
         document.getElementById('currentView').textContent = viewName || `📅 ${dateStr}`;
         return;
     }
-
-    const weekLabel = weekType === 'A' ? 'Неделя А' : 'Неделя Б';
-    let html = `<div class="day-schedule">
-        <div class="day-title">📅 ${dateStr}, ${dayName} · ${weekLabel}</div>
-    `;
-
-    filteredKeys.forEach(key => {
-        const pairData = daySchedule[key];
-        html += renderPairs(pairData, key);
-    });
 
     html += '</div>';
     container.innerHTML = html;
@@ -629,7 +616,7 @@ async function loadDate(dateValue) {
 }
 
 // ============================================
-// PWA — ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
+// PWA — ОБНОВЛЕНИЕ
 // ============================================
 async function checkForUpdates() {
     if ('serviceWorker' in navigator) {
