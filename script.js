@@ -4,7 +4,7 @@
 const SCHEDULE_URL = 'schedule.json';
 
 // ===== ПОГОДА =====
-const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e'; // Получить на openweathermap.org
+const WEATHER_API_KEY = '9652c71035f09eb62cc3f9730e00d99e';
 const CITY = 'Nevinnomyssk';
 const WEATHER_URL = `https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric&lang=ru&cnt=6`;
 
@@ -35,14 +35,37 @@ function formatDate(date) {
 }
 
 // ============================================
-// ОПРЕДЕЛЕНИЕ НЕДЕЛИ (А или Б)
+// ОПРЕДЕЛЕНИЕ НЕДЕЛИ (А или Б) — ПРАВИЛЬНОЕ
 // ============================================
 function getCurrentWeekType() {
     const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const diff = (now - startOfYear) / 86400000;
-    const weekNumber = Math.ceil((diff + startOfYear.getDay() + 1) / 7);
-    return weekNumber % 2 === 0 ? 'A' : 'B';
+    const year = now.getFullYear();
+
+    // Начало учебного года — 1 сентября
+    const startDate = new Date(year, 8, 1);
+
+    // Если сейчас август или раньше — берём прошлый год
+    if (now < startDate) {
+        startDate.setFullYear(year - 1);
+    }
+
+    // Находим ПЕРВЫЙ ПОНЕДЕЛЬНИК после 1 сентября
+    const firstMonday = new Date(startDate);
+    const dayOfWeek = startDate.getDay();
+    const daysToMonday = (dayOfWeek === 1) ? 0 : (8 - dayOfWeek) % 7;
+    firstMonday.setDate(startDate.getDate() + daysToMonday);
+
+    // Если сегодня ДО первого понедельника (1-6 сентября) — это НЕПОЛНАЯ первая неделя
+    if (now < firstMonday) {
+        return 'A'; // 1-я неделя = А
+    }
+
+    // Считаем недели от первого понедельника
+    const diffDays = Math.floor((now - firstMonday) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor(diffDays / 7) + 1; // 1, 2, 3...
+
+    // Чётная неделя = Б, нечётная = А
+    return weekNumber % 2 === 0 ? 'B' : 'A';
 }
 
 // ============================================
@@ -72,6 +95,64 @@ function updateDateAndWeek() {
     const dayName = days[now.getDay()];
     document.getElementById('currentDate').textContent = `📅 ${dateStr}, ${dayName}`;
     document.getElementById('currentWeek').textContent = `📆 ${weekLabel}`;
+}
+
+// ============================================
+// ОТОБРАЖЕНИЕ ПАР (без бейджей недель)
+// ============================================
+function renderPairs(pairData, key) {
+    const time = getPairTime(parseInt(key));
+
+    // Если это массив — выводим номер один раз, а все варианты под ним
+    if (Array.isArray(pairData)) {
+        let html = `
+            <div class="pair-group">
+                <div class="pair-group-header">
+                    <span class="pair-number">📗 ${key} пара</span>
+                    <span class="pair-time">🕒 ${time}</span>
+                </div>
+        `;
+        pairData.forEach(pair => {
+            const icon = getSubjectIcon(pair.subject);
+            html += `
+                <div class="pair-item">
+                    <span class="pair-subject">
+                        <span class="subject-icon">${icon}</span>
+                        ${pair.subject}
+                    </span>
+                    <span class="pair-meta">
+                        ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
+                        ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
+                        ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                    </span>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    // Если это объект — отображаем как обычно
+    const icon = getSubjectIcon(pairData.subject);
+    return `
+        <div class="pair-group">
+            <div class="pair-group-header">
+                <span class="pair-number">📗 ${key} пара</span>
+                <span class="pair-time">🕒 ${time}</span>
+            </div>
+            <div class="pair-item">
+                <span class="pair-subject">
+                    <span class="subject-icon">${icon}</span>
+                    ${pairData.subject}
+                </span>
+                <span class="pair-meta">
+                    ${pairData.teacher ? `<span class="teacher">👨‍🏫 ${pairData.teacher}</span>` : ''}
+                    ${pairData.room ? `<span class="room">📍 ${pairData.room}</span>` : ''}
+                    ${pairData.building ? `<span class="building">🏢 ${pairData.building}</span>` : ''}
+                </span>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -311,13 +392,22 @@ function renderScheduleByDay(dayName, viewName) {
     const pairKeys = Object.keys(daySchedule)
         .filter(key => daySchedule[key].week === 'both' || daySchedule[key].week === weekType)
         .sort((a, b) => parseInt(a) - parseInt(b));
+    
+    const dateStr = getDateByDayName(dayName);
+    
     if (pairKeys.length === 0) {
-        container.innerHTML = `<div class="no-schedule">📭 Расписания на ${dayName} нет</div>`;
+        container.innerHTML = `
+            <div class="no-schedule">
+                📭 Расписания на ${dayName}, ${dateStr} нет
+                <small>Возможно, это выходной день или начало семестра</small>
+            </div>
+        `;
         document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
         return;
     }
-    const dateStr = getDateByDayName(dayName);
+
     let html = `<div class="day-schedule"><div class="day-title">📅 ${dayName}, ${dateStr}</div>`;
+
     pairKeys.forEach(key => {
         const pair = daySchedule[key];
         const time = getPairTime(parseInt(key));
@@ -336,10 +426,12 @@ function renderScheduleByDay(dayName, viewName) {
                     ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                     ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
                     ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                    ${pair.note ? `<span class="note">📌 ${pair.note}</span>` : ''}
                 </span>
             </div>
         `;
     });
+
     html += '</div>';
     container.innerHTML = html;
     document.getElementById('currentView').textContent = viewName || `📅 ${dayName}`;
@@ -364,7 +456,7 @@ async function loadSchedule() {
         container.innerHTML = `
             <div class="no-schedule">
                 📭 Расписание ещё не загружено
-                <small>Администратор должен загрузить файл</small>
+                <small>Пожалуйста, сообщите администратору</small>
             </div>
         `;
         return false;
@@ -412,11 +504,10 @@ async function loadWeek() {
         const pairKeys = Object.keys(daySchedule)
             .filter(key => daySchedule[key].week === 'both' || daySchedule[key].week === weekType)
             .sort((a, b) => parseInt(a) - parseInt(b));
-        console.log(`📅 ${dayName}: ${pairKeys.length} пар`);
+        const dateStr = getDateByDayName(dayName);
         if (pairKeys.length > 0) {
             foundAny = true;
             totalPairs += pairKeys.length;
-            const dateStr = getDateByDayName(dayName);
             html += `<div class="day-schedule"><div class="day-title">📅 ${dayName}, ${dateStr}</div>`;
             pairKeys.forEach(key => {
                 const pair = daySchedule[key];
@@ -436,6 +527,7 @@ async function loadWeek() {
                             ${pair.teacher ? `<span class="teacher">👨‍🏫 ${pair.teacher}</span>` : ''}
                             ${pair.room ? `<span class="room">📍 ${pair.room}</span>` : ''}
                             ${pair.building ? `<span class="building">🏢 ${pair.building}</span>` : ''}
+                            ${pair.note ? `<span class="note">📌 ${pair.note}</span>` : ''}
                         </span>
                     </div>
                 `;
@@ -451,33 +543,94 @@ async function loadWeek() {
     updateDateAndWeek();
 }
 
+// ============================================
+// ОТОБРАЖЕНИЕ РАСПИСАНИЯ ПО ДАТЕ (фильтрация по неделе)
+// ============================================
+function renderScheduleByDate(dateStr, viewName) {
+    const container = document.getElementById('scheduleContainer');
+    const daySchedule = scheduleData[dateStr] || {};
+    const weekType = getCurrentWeekType();
+
+    // Определяем день недели по дате
+    const parts = dateStr.split('.');
+    const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    const days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+    const dayName = days[dateObj.getDay()];
+
+    // Получаем ключи (номера пар)
+    const pairKeys = Object.keys(daySchedule).sort((a, b) => parseInt(a) - parseInt(b));
+
+    // ФИЛЬТРУЕМ по неделе
+    const filteredKeys = pairKeys.filter(key => {
+        const data = daySchedule[key];
+        if (Array.isArray(data)) {
+            // Если массив — оставляем только элементы с подходящей неделей
+            const filtered = data.filter(pair => pair.week === 'both' || pair.week === weekType);
+            // Если после фильтрации остались элементы — заменяем массив на отфильтрованный
+            if (filtered.length > 0) {
+                daySchedule[key] = filtered;
+                return true;
+            }
+            return false;
+        } else {
+            return data.week === 'both' || data.week === weekType;
+        }
+    });
+
+    if (filteredKeys.length === 0) {
+        container.innerHTML = `
+            <div class="no-schedule">
+                📭 Расписания на ${dateStr} (${dayName}) нет
+                <small>Возможно, это выходной день</small>
+            </div>
+        `;
+        document.getElementById('currentView').textContent = viewName || `📅 ${dateStr}`;
+        return;
+    }
+
+    const weekLabel = weekType === 'A' ? 'Неделя А' : 'Неделя Б';
+    let html = `<div class="day-schedule">
+        <div class="day-title">📅 ${dateStr}, ${dayName} · ${weekLabel}</div>
+    `;
+
+    filteredKeys.forEach(key => {
+        const pairData = daySchedule[key];
+        html += renderPairs(pairData, key);
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+    document.getElementById('currentView').textContent = viewName || `📅 ${dateStr}`;
+}
+
+// ============================================
+// ВЫБОР ДАТЫ
+// ============================================
 async function loadDate(dateValue) {
     if (!dateValue) return;
+
     const loaded = await loadSchedule();
     if (!loaded) return;
+
     const parts = dateValue.split('-');
-    const dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+
+    const dateStr = `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+
     if (scheduleData[dateStr]) {
-        renderScheduleByDay(dateStr, `📅 ${dateStr}`);
+        renderScheduleByDate(dateStr, `📅 ${dateStr}`);
+        updateDateAndWeek();
     } else {
-        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-        const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-        const dayName = days[dateObj.getDay()];
-        if (scheduleData[dayName]) {
-            renderScheduleByDay(dayName, `📅 ${dateStr} (${dayName})`);
-        } else {
-            document.getElementById('scheduleContainer').innerHTML = 
-                `<div class="no-schedule">📭 Расписания на ${dateStr} нет</div>`;
-        }
+        document.getElementById('scheduleContainer').innerHTML = 
+            `<div class="no-schedule">📭 Расписания на ${dateStr} нет</div>`;
     }
-    updateDateAndWeek();
 }
 
 // ============================================
 // PWA — ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
 // ============================================
-
-// Проверка обновлений при загрузке
 async function checkForUpdates() {
     if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
@@ -491,7 +644,6 @@ async function checkForUpdates() {
     }
 }
 
-// Проверка каждые 30 секунд
 setInterval(() => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(registration => {
@@ -500,7 +652,6 @@ setInterval(() => {
     }
 }, 30000);
 
-// Уведомление об обновлении
 let newWorker;
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
