@@ -1,7 +1,4 @@
-// ============================================
-// SERVICE WORKER — ПОЛНОЕ ОБНОВЛЕНИЕ
-// ============================================
-const CACHE_NAME = 'schedule-v3'; // Меняйте версию при каждом обновлении
+const CACHE_NAME = 'schedule-v1';
 const ASSETS = [
     '/schedule-site/',
     '/schedule-site/index.html',
@@ -11,7 +8,6 @@ const ASSETS = [
     '/schedule-site/НХТК.jpg'
 ];
 
-// ===== УСТАНОВКА =====
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -23,7 +19,6 @@ self.addEventListener('install', event => {
     );
 });
 
-// ===== АКТИВАЦИЯ =====
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys => {
@@ -31,34 +26,45 @@ self.addEventListener('activate', event => {
                 keys.filter(key => key !== CACHE_NAME)
                     .map(key => caches.delete(key))
             );
-        }).then(() => {
-            return self.clients.claim();
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-// ===== ПЕРЕХВАТ ЗАПРОСОВ =====
 self.addEventListener('fetch', event => {
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                if (response && response.status === 200) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, clone);
-                    });
+        caches.match(event.request)
+            .then(cached => {
+                if (cached) {
+                    if (event.request.url.includes('schedule.json')) {
+                        fetch(event.request)
+                            .then(response => {
+                                caches.open(CACHE_NAME).then(cache => {
+                                    cache.put(event.request, response);
+                                });
+                            })
+                            .catch(() => {});
+                    }
+                    return cached;
                 }
-                return response;
-            })
-            .catch(() => {
-                return caches.match(event.request);
+                return fetch(event.request)
+                    .then(response => {
+                        if (response && response.status === 200) {
+                            const clone = response.clone();
+                            caches.open(CACHE_NAME).then(cache => {
+                                cache.put(event.request, clone);
+                            });
+                        }
+                        return response;
+                    })
+                    .catch(() => {
+                        if (event.request.mode === 'navigate') {
+                            return caches.match('/schedule-site/index.html');
+                        }
+                        return new Response('Офлайн-режим', {
+                            status: 503,
+                            statusText: 'Service Unavailable'
+                        });
+                    });
             })
     );
-});
-
-// ===== ОБРАБОТКА СООБЩЕНИЙ =====
-self.addEventListener('message', (event) => {
-    if (event.data === 'skipWaiting') {
-        self.skipWaiting();
-    }
 });
