@@ -1,13 +1,17 @@
+// ============================================
+// SERVICE WORKER — ОФЛАЙН-РЕЖИМ
+// ============================================
 const CACHE_NAME = 'schedule-v1';
 const ASSETS = [
     '/schedule-site/',
     '/schedule-site/index.html',
-    '/schedule-site/style.css',
-    '/schedule-site/script.js',
-    '/schedule-site/schedule.json',
-    '/schedule-site/НХТК.jpg'
+    '/schedule-site/manifest.json',
+    '/schedule-site/logo.png',
+    '/schedule-site/НХТК.jpg',
+    '/schedule-site/schedule.json'
 ];
 
+// ===== УСТАНОВКА =====
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -19,6 +23,7 @@ self.addEventListener('install', event => {
     );
 });
 
+// ===== АКТИВАЦИЯ =====
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys => {
@@ -30,6 +35,7 @@ self.addEventListener('activate', event => {
     );
 });
 
+// ===== ПЕРЕХВАТ ЗАПРОСОВ =====
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)

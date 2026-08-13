@@ -8,17 +8,18 @@
     
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     
+    <!-- ===== PWA ===== -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Расписание И-24-1">
-    <meta name="apple-touch-icon" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <link rel="apple-touch-icon" href="logo.png">
     <meta name="theme-color" content="#4a6cf7">
     
     <style>
         /* ============================================
-           ВСЕ СТИЛИ (включая мини-кнопки)
+           ВСЕ СТИЛИ
            ============================================ */
         * {
             margin: 0;
@@ -1076,9 +1077,7 @@
         }
         .notification-close:hover { color: var(--text); transform: rotate(90deg); }
 
-        /* ============================================
-           МИНИ-КНОПКИ В ПОДВАЛЕ
-           ============================================ */
+        /* ===== МИНИ-КНОПКИ В ПОДВАЛЕ ===== */
         .footer-links {
             display: flex;
             justify-content: center;
@@ -1524,8 +1523,7 @@
         <!-- ВКЛАДКИ -->
         <nav class="tabs" role="tablist">
             <button class="tab active" data-tab="schedule" onclick="switchTab('schedule')">
-                📅 Расписание
-            </button>
+                📅 Расписание            </button>
             <button class="tab" data-tab="calls" onclick="switchTab('calls')">
                 🔔 Звонки
             </button>
@@ -1548,7 +1546,6 @@
             </div>
 
             <div id="scheduleContainer" role="main" aria-live="polite">
-                <!-- СКЕЛЕТОН -->
                 <div class="skeleton-loader" id="skeletonLoader">
                     <div class="skeleton-day">
                         <div class="skeleton-title"></div>
@@ -1572,7 +1569,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- КОНТЕНТ -->
                 <div id="scheduleContent"></div>
             </div>
         </div>
@@ -1593,18 +1589,17 @@
                 <span class="update-time" id="updateTime">Обновлено: —</span>
             </div>
 
-<!-- МИНИ-КНОПКИ -->
-<div class="footer-links">
-    <a href="https://himkol.ru/" target="_blank" class="footer-link" title="Официальный сайт" aria-label="Официальный сайт колледжа">
-        🌐
-    </a>
-    <a href="https://vk.ru/himkol" target="_blank" class="footer-link" title="Группа ВКонтакте" aria-label="Группа ВКонтакте">
-        📱
-    </a>
-    <a href="https://yandex.ru/maps/?text=Невинномысск%20ул.%20Павлова%2017" target="_blank" class="footer-link" title="Как нас найти" aria-label="Карта проезда">
-        📍
-    </a>
-</div>
+            <div class="footer-links">
+                <a href="https://himkol.ru/" target="_blank" class="footer-link" title="Официальный сайт" aria-label="Официальный сайт колледжа">
+                    🌐
+                </a>
+                <a href="https://vk.ru/himkol" target="_blank" class="footer-link" title="Группа ВКонтакте" aria-label="Группа ВКонтакте">
+                    📱
+                </a>
+                <a href="https://yandex.ru/maps/?text=Невинномысск%20ул.%20Павлова%2017" target="_blank" class="footer-link" title="Как нас найти" aria-label="Карта проезда">
+                    📍
+                </a>
+            </div>
 
             <div class="disclaimer">
                 ⚠️ Данный сайт является <strong>неофициальным</strong> информационным ресурсом 
@@ -1725,8 +1720,8 @@
             try {
                 const notification = new Notification(title, {
                     body: body,
-                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>',
-                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>',
+                    icon: 'logo.png',
+                    badge: 'logo.png',
                     vibrate: [200, 100, 200],
                     requireInteraction: true,
                     tag: 'schedule-update',
